@@ -5,24 +5,40 @@ import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs, Timestamp, q
 import { db } from '@/lib/firebase';
 import { adminDb } from '@/lib/firebase-admin';
 
-export type UserRole = 'admin' | 'recruiter' | 'employer' | 'seeker';
+export type UserRole = 'admin' | 'employer' | 'seeker';
 
-export interface UserDocument {
+// Common fields for all users
+interface BaseUser {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL?: string;
   role: UserRole;
+  phone?: string;
   createdAt: Timestamp;
 }
 
-export interface User {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL?: string;
-  role: UserRole;
-  createdAt: Date;
+// Role-specific fields
+export interface SeekerData {
+  role: 'seeker';
+}
+
+export interface EmployerData {
+  role: 'employer';
+  companyName?: string;
+  industry?: string;
+}
+
+export interface AdminData {
+    role: 'admin';
+}
+
+// The document shape in Firestore
+export type UserDocument = BaseUser & (SeekerData | EmployerData | AdminData);
+
+// The user object shape on the client
+export type User = Omit<UserDocument, 'createdAt'> & {
+    createdAt: Date;
 }
 
 export type SerializableUser = Omit<User, 'createdAt'> & {
@@ -65,10 +81,20 @@ export async function getUsers(uids: string[]): Promise<User[]> {
   if (uids.length === 0) {
     return [];
   }
-  // Firestore 'in' queries are limited to 10 elements. We might need to chunk this later.
-  const q = query(collection(db, 'users'), where(documentId(), 'in', uids));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(userFromDoc);
+  // Firestore 'in' queries are limited to 30 elements in the array.
+  const chunks = [];
+  for (let i = 0; i < uids.length; i += 30) {
+      chunks.push(uids.slice(i, i + 30));
+  }
+  
+  const userPromises = chunks.map(async (chunk) => {
+    const q = query(collection(db, 'users'), where(documentId(), 'in', chunk));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(userFromDoc);
+  });
+
+  const users = await Promise.all(userPromises);
+  return users.flat();
 }
 
 

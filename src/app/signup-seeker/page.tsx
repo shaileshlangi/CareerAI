@@ -20,6 +20,7 @@ import { Loader2 } from 'lucide-react';
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email." }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number."}),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
 });
 
@@ -33,6 +34,7 @@ export default function SignUpSeekerPage() {
     defaultValues: {
       name: "",
       email: "",
+      phone: "",
       password: "",
     },
   });
@@ -46,6 +48,7 @@ export default function SignUpSeekerPage() {
       await createUser(user.uid, {
         displayName: values.name,
         email: values.email,
+        phone: values.phone,
         role: 'seeker',
       });
 
@@ -102,6 +105,19 @@ export default function SignUpSeekerPage() {
                       <FormLabel>Email Address</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="you@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input type="tel" placeholder="+91 12345 67890" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
