@@ -69,12 +69,7 @@ export async function createJob(
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
-    // Firestore security rules will handle authorization
-    // For the sake of this prototype, we'll write a mock job for seekers
-    if (employerId === 'seeker-prototype') {
-        await setDoc(doc(db, 'jobs', 'mock-job-1'), newJobData);
-        return 'mock-job-1';
-    }
+    
   await setDoc(jobRef, newJobData);
   return jobRef.id;
 }
@@ -90,31 +85,6 @@ const jobFromDoc = (docSnap: any): Job => {
 
 // Client-side function
 export async function getJob(uid: string): Promise<Job | null> {
-  // Seeker prototype special case
-  if (uid === 'mock-job-1') {
-    const mockJobDoc = await getDoc(doc(db, 'jobs', 'mock-job-1'));
-    if (mockJobDoc.exists()) {
-        return jobFromDoc(mockJobDoc);
-    }
-    // If it doesn't exist, let's create a placeholder for the prototype
-    const placeholderJob = {
-        uid: 'mock-job-1',
-        employerId: 'mock-employer',
-        title: 'Senior Frontend Developer',
-        description: 'We are looking for an experienced frontend developer to join our team. You will be responsible for building and maintaining our user-facing web applications. Key responsibilities include implementing new features, optimizing performance, and ensuring a high-quality user experience. You should have strong proficiency in React, TypeScript, and modern CSS frameworks.',
-        skills: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS'],
-        salary: 1500000,
-        location: 'Remote',
-        status: 'open' as JobStatus,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-    }
-    await setDoc(doc(db, 'jobs', 'mock-job-1'), placeholderJob);
-    
-    const fetchedDoc = await getDoc(doc(db, 'jobs', 'mock-job-1'));
-    return jobFromDoc(fetchedDoc);
-  }
-
   const docRef = doc(db, 'jobs', uid);
   const docSnap = await getDoc(docRef);
 
@@ -124,6 +94,14 @@ export async function getJob(uid: string): Promise<Job | null> {
     return null;
   }
 }
+
+// Client-side function
+export async function getJobs(status: JobStatus = 'open'): Promise<Job[]> {
+    const q = query(collection(db, 'jobs'), where('status', '==', status));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(jobFromDoc);
+}
+
 
 // Client-side function
 export async function getJobsForEmployer(employerId: string): Promise<Job[]> {

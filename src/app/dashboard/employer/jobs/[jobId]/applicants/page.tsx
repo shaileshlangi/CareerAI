@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { getJob, Job } from '@/lib/job';
-import { getUsersForJob, User } from '@/lib/user';
+import { getApplicantsForJob, Applicant } from '@/lib/application';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button }from "@/components/ui/button";
 import {
@@ -20,6 +20,7 @@ import { Loader2, Bot } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function ApplicantsPage() {
   const { user } = useAuth();
@@ -28,7 +29,7 @@ export default function ApplicantsPage() {
   const { toast } = useToast();
 
   const [job, setJob] = useState<Job | null>(null);
-  const [applicants, setApplicants] = useState<User[]>([]);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,9 +40,7 @@ export default function ApplicantsPage() {
         const fetchedJob = await getJob(jobId);
         if (fetchedJob && fetchedJob.employerId === user.uid) {
           setJob(fetchedJob);
-          // Mocking applicants for now, as we don't have an application system yet.
-          // In a real app, you would fetch users who have applied to this job.
-          const fetchedApplicants = await getUsersForJob(jobId); 
+          const fetchedApplicants = await getApplicantsForJob(jobId); 
           setApplicants(fetchedApplicants);
         } else {
           toast({ variant: 'destructive', title: 'Error', description: 'Job not found or you do not have permission to view it.' });
@@ -86,18 +85,26 @@ export default function ApplicantsPage() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Interview Status</TableHead>
+                <TableHead>Applied On</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {applicants.length > 0 ? (
-                applicants.map((applicant) => (
-                  <TableRow key={applicant.uid}>
-                    <TableCell className="font-medium">{applicant.displayName}</TableCell>
-                    <TableCell>{applicant.email}</TableCell>
+                applicants.map(({ user, application }) => (
+                  <TableRow key={user.uid}>
+                    <TableCell className="font-medium flex items-center gap-2">
+                      <Avatar>
+                        <AvatarImage src={user.photoURL || ''} />
+                        <AvatarFallback>{user.displayName?.[0]}</AvatarFallback>
+                      </Avatar>
+                      {user.displayName}
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{application.appliedAt.toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">Not Started</Badge>
+                      <Badge variant="secondary">{application.status}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" disabled>
@@ -109,7 +116,7 @@ export default function ApplicantsPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No applicants yet.
                   </TableCell>
                 </TableRow>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -17,7 +18,7 @@ const navLinks = [
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isLoggedIn, loading } = useAuth();
+  const { user, loading, isLoggedIn } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
