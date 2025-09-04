@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { Job } from "@/lib/job";
 import {
   Table,
   TableBody,
@@ -15,6 +14,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+
+interface Job {
+    uid: string;
+    title: string;
+    location: string;
+    status: string;
+    createdAt: Date;
+}
 
 interface JobListProps {
   jobs: Job[];
@@ -37,8 +44,8 @@ export default function AdminJobList({ jobs }: JobListProps) {
                 if (bValue === null || bValue === undefined) return -1;
                 
                 let comparison = 0;
-                if (sortConfig.key === 'createdAt' && aValue.toDate && bValue.toDate) {
-                    comparison = aValue.toDate().getTime() - bValue.toDate().getTime();
+                if (aValue instanceof Date && bValue instanceof Date) {
+                    comparison = aValue.getTime() - bValue.getTime();
                 } else if (typeof aValue === 'string' && typeof bValue === 'string') {
                     comparison = aValue.localeCompare(bValue);
                 } else if (typeof aValue === 'number' && typeof bValue === 'number') {
@@ -126,7 +133,7 @@ export default function AdminJobList({ jobs }: JobListProps) {
                   </TableCell>
                   <TableCell>{job.location}</TableCell>
                   <TableCell>
-                    {job.createdAt?.toDate().toLocaleDateString()}
+                    {job.createdAt?.toLocaleDateString()}
                   </TableCell>
                 </TableRow>
               ))

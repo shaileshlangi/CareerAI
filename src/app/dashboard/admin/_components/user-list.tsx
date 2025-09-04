@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { User } from "@/lib/user";
 import {
   Table,
   TableBody,
@@ -15,6 +14,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+
+// The User type here will have a Date object for createdAt
+interface User {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    role: string;
+    createdAt: Date;
+}
 
 interface UserListProps {
   users: User[];
@@ -37,8 +45,8 @@ export default function AdminUserList({ users }: UserListProps) {
                 if (bValue === null || bValue === undefined) return -1;
                 
                 let comparison = 0;
-                if (sortConfig.key === 'createdAt' && aValue.toDate && bValue.toDate) {
-                    comparison = aValue.toDate().getTime() - bValue.toDate().getTime();
+                if (aValue instanceof Date && bValue instanceof Date) {
+                    comparison = aValue.getTime() - bValue.getTime();
                 } else if (typeof aValue === 'string' && typeof bValue === 'string') {
                     comparison = aValue.localeCompare(bValue);
                 } else if (typeof aValue === 'number' && typeof bValue === 'number') {
@@ -126,7 +134,7 @@ export default function AdminUserList({ users }: UserListProps) {
                         </Badge>
                     </TableCell>
                     <TableCell>
-                    {user.createdAt?.toDate().toLocaleDateString()}
+                    {user.createdAt?.toLocaleDateString()}
                     </TableCell>
                 </TableRow>
                 ))

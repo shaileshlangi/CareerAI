@@ -12,16 +12,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminUserList from './_components/user-list';
 import AdminJobList from './_components/job-list';
 
+// We need to adjust the Job and User types on the client to handle the serialized date
+type SerializableUser = Omit<User, 'createdAt'> & { createdAt: string | null };
+type SerializableJob = Omit<Job, 'createdAt' | 'updatedAt'> & { createdAt: string | null, updatedAt: string | null };
+
+
 export default function AdminDashboard() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const [users, setUsers] = useState<User[]>([]);
-    const [jobs, setJobs] = useState<Job[]>([]);
+    const [users, setUsers] = useState<SerializableUser[]>([]);
+    const [jobs, setJobs] = useState<SerializableJob[]>([]);
     const [loadingData, setLoadingData] = useState(true);
 
     useEffect(() => {
         if (!authLoading) {
-            if (user?.role !== 'admin') {
+            if (!user) {
+                router.push('/login');
+            } else if (user.role !== 'admin') {
                 router.push('/dashboard');
             }
         }
@@ -36,8 +43,8 @@ export default function AdminDashboard() {
                         getAllUsers(),
                         getAllJobs()
                     ]);
-                    setUsers(fetchedUsers);
-                    setJobs(fetchedJobs);
+                    setUsers(fetchedUsers as SerializableUser[]);
+                    setJobs(fetchedJobs as SerializableJob[]);
                 } catch (error) {
                     console.error("Failed to fetch admin data", error);
                 } finally {
@@ -46,11 +53,8 @@ export default function AdminDashboard() {
             }
         }
 
-        if (!authLoading && user) {
+        if (user && !authLoading) {
             fetchData();
-        } else if (!authLoading && !user) {
-            // If not logged in and auth is done loading, no data to fetch
-            setLoadingData(false);
         }
     }, [user, authLoading]);
 
@@ -61,6 +65,10 @@ export default function AdminDashboard() {
     const totalUsers = users.length;
     const totalJobs = jobs.length;
     const openJobs = jobs.filter(job => job.status === 'open').length;
+
+    const clientSideUsers = users.map(u => ({...u, createdAt: u.createdAt ? new Date(u.createdAt) : new Date()}));
+    const clientSideJobs = jobs.map(j => ({...j, createdAt: j.createdAt ? new Date(j.createdAt) : new Date()}));
+
 
     return (
         <div className="container py-12">
@@ -108,7 +116,7 @@ export default function AdminDashboard() {
                             <CardTitle>User Management</CardTitle>
                         </CardHeader>
                         <CardContent>
-                           <AdminUserList users={users} />
+                           <AdminUserList users={clientSideUsers} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -118,7 +126,7 @@ export default function AdminDashboard() {
                             <CardTitle>Job Management</CardTitle>
                         </Header>
                         <CardContent>
-                           <AdminJobList jobs={jobs} />
+                           <AdminJobList jobs={clientSideJobs} />
                         </CardContent>
                     </Card>
                 </TabsContent>
