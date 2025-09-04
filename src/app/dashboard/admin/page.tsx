@@ -62,6 +62,10 @@ export default function AdminDashboard() {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
     }
     
+    if (!user) {
+      return null;
+    }
+
     const totalUsers = users.length;
     const totalJobs = jobs.length;
     const openJobs = jobs.filter(job => job.status === 'open').length;
@@ -73,7 +77,7 @@ export default function AdminDashboard() {
     return (
         <div className="container py-12">
             <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground mb-8">Welcome, Admin!</p>
+            <p className="text-muted-foreground mb-8">Welcome, {user.displayName || 'Admin'}!</p>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
                 <Card>

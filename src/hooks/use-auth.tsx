@@ -1,3 +1,4 @@
+
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -14,6 +15,8 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const publicRoutes = ['/login', '/signup', '/signup-seeker', '/signup-employer', '/pricing', '/products', '/about', '/contact', '/privacy', '/terms', '/'];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -40,13 +43,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const isLoggedIn = !!firebaseUser;
 
-  const publicRoutes = ['/login', '/signup', '/signup-seeker', '/signup-employer', '/pricing', '/products', '/about', '/contact', '/privacy', '/terms', '/'];
-
   useEffect(() => {
     if (!loading && !isLoggedIn && !publicRoutes.some(path => pathname.startsWith(path))) {
       router.push('/login');
     }
-  }, [loading, isLoggedIn, pathname, router, publicRoutes]);
+  }, [loading, isLoggedIn, pathname, router]);
 
 
   return (
