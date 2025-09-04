@@ -61,10 +61,10 @@ export default function AdminDashboard() {
             }
         }
 
-        if (user && !authLoading) {
+        if (user) {
             fetchData();
         } else if (!authLoading) {
-            // If the user is not an admin, we don't need to fetch data.
+            // If there's no user and auth is not loading, we can stop loading data.
             setLoadingData(false);
         }
     }, [user, authLoading]);
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
     }
     
     if (!user || user.role !== 'admin') {
-        // This should be handled by the redirect, but as a fallback, render nothing.
+        // This is handled by the redirect, but as a fallback, render nothing until redirect happens.
         return null;
     }
 
