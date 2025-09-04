@@ -44,27 +44,25 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         async function fetchData() {
-            if (user?.role === 'admin') {
-                setLoadingData(true);
-                try {
-                    const [fetchedUsers, fetchedJobs] = await Promise.all([
-                        getAllUsers(),
-                        getAllJobs()
-                    ]);
-                    setUsers(fetchedUsers.map(toClientUser));
-                    setJobs(fetchedJobs.map(toClientJob));
-                } catch (error) {
-                    console.error("Failed to fetch admin data", error);
-                } finally {
-                    setLoadingData(false);
-                }
+            setLoadingData(true);
+            try {
+                const [fetchedUsers, fetchedJobs] = await Promise.all([
+                    getAllUsers(),
+                    getAllJobs()
+                ]);
+                setUsers(fetchedUsers.map(toClientUser));
+                setJobs(fetchedJobs.map(toClientJob));
+            } catch (error) {
+                console.error("Failed to fetch admin data", error);
+            } finally {
+                setLoadingData(false);
             }
         }
 
-        if (user) {
+        if (user?.role === 'admin') {
             fetchData();
         } else if (!authLoading) {
-            // If there's no user and we're not loading auth, we don't need to fetch data.
+            // If there's no user and we're not in an auth loading state, we can stop loading data.
             setLoadingData(false);
         }
     }, [user, authLoading]);
@@ -74,7 +72,7 @@ export default function AdminDashboard() {
     }
     
     if (!user || user.role !== 'admin') {
-        // This is handled by the redirect, but as a fallback, render nothing until redirect happens.
+        // This is mainly a fallback. The redirect in useEffect should handle this.
         return null;
     }
 
