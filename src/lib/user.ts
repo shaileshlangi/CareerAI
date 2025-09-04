@@ -1,7 +1,7 @@
 
 'use server';
 
-import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs, Timestamp, query, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { adminDb } from '@/lib/firebase-admin';
 
@@ -69,4 +69,16 @@ export async function getAllUsers(): Promise<SerializableUser[]> {
       };
     });
     return users;
+}
+
+// Client-side function to get mock applicants for a job.
+// In a real app, this would query an 'applications' collection.
+export async function getUsersForJob(jobId: string): Promise<User[]> {
+    // This is a mock implementation. We're just grabbing a few users.
+    // A real implementation would look at an "applications" collection
+    // that links users to jobs.
+    console.log(`Fetching mock applicants for job: ${jobId}`);
+    const q = query(collection(db, 'users'), limit(5));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(userFromDoc);
 }
