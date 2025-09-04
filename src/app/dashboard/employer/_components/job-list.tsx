@@ -94,7 +94,7 @@ export default function JobList({ jobs, onJobDeleted }: JobListProps) {
                 </TableCell>
                 <TableCell>{job.location}</TableCell>
                 <TableCell>
-                  {job.createdAt?.toDate().toLocaleDateString()}
+                  {job.createdAt?.toLocaleDateString()}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -123,7 +123,7 @@ export default function JobList({ jobs, onJobDeleted }: JobListProps) {
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </TableCell>
+                </TableCell>              
               </TableRow>
             ))
           ) : (

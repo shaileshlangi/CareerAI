@@ -14,15 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import type { User } from '@/lib/user';
 
-// The User type here will have a Date object for createdAt
-interface User {
-    uid: string;
-    email: string | null;
-    displayName: string | null;
-    role: string;
-    createdAt: Date;
-}
 
 interface UserListProps {
   users: User[];

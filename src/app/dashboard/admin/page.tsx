@@ -4,24 +4,32 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { getAllUsers, User } from '@/lib/user';
-import { getAllJobs, Job } from '@/lib/job';
+import { getAllUsers, User, SerializableUser } from '@/lib/user';
+import { getAllJobs, Job, SerializableJob } from '@/lib/job';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Users, Briefcase, BarChart } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminUserList from './_components/user-list';
 import AdminJobList from './_components/job-list';
 
-// We need to adjust the Job and User types on the client to handle the serialized date
-type SerializableUser = Omit<User, 'createdAt'> & { createdAt: string | null };
-type SerializableJob = Omit<Job, 'createdAt' | 'updatedAt'> & { createdAt: string | null; updatedAt: string | null };
+// We convert the serializable types to client-side types with Date objects
+const toClientUser = (user: SerializableUser): User => ({
+    ...user,
+    createdAt: user.createdAt ? new Date(user.createdAt) : new Date(),
+});
+
+const toClientJob = (job: SerializableJob): Job => ({
+    ...job,
+    createdAt: job.createdAt ? new Date(job.createdAt) : new Date(),
+    updatedAt: job.updatedAt ? new Date(job.updatedAt) : new Date(),
+});
 
 
 export default function AdminDashboard() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const [users, setUsers] = useState<SerializableUser[]>([]);
-    const [jobs, setJobs] = useState<SerializableJob[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
+    const [jobs, setJobs] = useState<Job[]>([]);
     const [loadingData, setLoadingData] = useState(true);
 
     useEffect(() => {
@@ -43,8 +51,8 @@ export default function AdminDashboard() {
                         getAllUsers(),
                         getAllJobs()
                     ]);
-                    setUsers(fetchedUsers as SerializableUser[]);
-                    setJobs(fetchedJobs as SerializableJob[]);
+                    setUsers(fetchedUsers.map(toClientUser));
+                    setJobs(fetchedJobs.map(toClientJob));
                 } catch (error) {
                     console.error("Failed to fetch admin data", error);
                 } finally {
@@ -69,10 +77,6 @@ export default function AdminDashboard() {
     const totalUsers = users.length;
     const totalJobs = jobs.length;
     const openJobs = jobs.filter(job => job.status === 'open').length;
-
-    const clientSideUsers = users.map(u => ({...u, createdAt: u.createdAt ? new Date(u.createdAt) : new Date()}));
-    const clientSideJobs = jobs.map(j => ({...j, createdAt: j.createdAt ? new Date(j.createdAt) : new Date()}));
-
 
     return (
         <div className="container py-12">
@@ -120,7 +124,7 @@ export default function AdminDashboard() {
                             <CardTitle>User Management</CardTitle>
                         </CardHeader>
                         <CardContent>
-                           <AdminUserList users={clientSideUsers} />
+                           <AdminUserList users={users} />
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -130,7 +134,7 @@ export default function AdminDashboard() {
                             <CardTitle>Job Management</CardTitle>
                         </Header>
                         <CardContent>
-                           <AdminJobList jobs={clientSideJobs} />
+                           <AdminJobList jobs={jobs} />
                         </CardContent>
                     </Card>
                 </TabsContent>

@@ -1,3 +1,4 @@
+
 'use server';
 
 import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs, Timestamp } from 'firebase/firestore';
@@ -6,13 +7,26 @@ import { adminDb } from '@/lib/firebase-admin';
 
 export type UserRole = 'admin' | 'recruiter' | 'employer' | 'seeker';
 
+export interface UserDocument {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  role: UserRole;
+  createdAt: Timestamp;
+}
+
 export interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
   role: UserRole;
-  createdAt: any;
+  createdAt: Date;
 }
+
+export type SerializableUser = Omit<User, 'createdAt'> & {
+    createdAt: string;
+};
+
 
 // This function still uses the client SDK because it's called from the client-side sign-up process.
 export async function createUser(uid: string, data: Omit<User, 'uid' | 'createdAt'>): Promise<void> {
@@ -23,28 +37,36 @@ export async function createUser(uid: string, data: Omit<User, 'uid' | 'createdA
   });
 }
 
+const userFromDoc = (docSnap: any): User => {
+    const data = docSnap.data() as UserDocument;
+    return {
+      ...data,
+      createdAt: data.createdAt.toDate(),
+    };
+};
+
+
 // This function also uses the client SDK for fetching the current user's profile on the client.
 export async function getUser(uid: string): Promise<User | null> {
   const docRef = doc(db, 'users', uid);
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    return docSnap.data() as User;
+    return userFromDoc(docSnap);
   } else {
     return null;
   }
 }
 
 // This function is for server-side use, so it uses the Admin SDK.
-export async function getAllUsers(): Promise<User[]> {
-    const usersSnapshot = await adminDb.collection('users').get();
-    const users: User[] = usersSnapshot.docs.map(doc => {
-      const data = doc.data();
+export async function getAllUsers(): Promise<SerializableUser[]> {
+    const usersSnapshot = await adminDb.collection('users').orderBy('createdAt', 'desc').get();
+    const users: SerializableUser[] = usersSnapshot.docs.map(doc => {
+      const data = doc.data() as UserDocument;
       return {
         ...data,
-        // Convert Firestore Timestamp to a serializable format
-        createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate().toISOString() : null, 
-      } as User;
+        createdAt: data.createdAt.toDate().toISOString(), 
+      };
     });
     return users;
 }

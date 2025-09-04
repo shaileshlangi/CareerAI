@@ -14,14 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-
-interface Job {
-    uid: string;
-    title: string;
-    location: string;
-    status: string;
-    createdAt: Date;
-}
+import type { Job } from '@/lib/job';
 
 interface JobListProps {
   jobs: Job[];

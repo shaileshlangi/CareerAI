@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -15,12 +16,11 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { adminDb } from '@/lib/firebase-admin';
-import type { User } from './user';
-
 
 export type JobStatus = 'open' | 'closed';
 
-export interface Job {
+// This is the shape of the data in Firestore
+export interface JobDocument {
   uid: string;
   employerId: string;
   title: string;
@@ -29,9 +29,31 @@ export interface Job {
   salary: number;
   location: string;
   status: JobStatus;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 }
+
+
+// This is the shape of the data we use on the client-side
+export interface Job {
+    uid: string;
+    employerId: string;
+    title: string;
+    description: string;
+    skills: string[];
+    salary: number;
+    location: string;
+    status: JobStatus;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+// This is for data coming from server-side rendering (e.g. getAllJobs)
+export type SerializableJob = Omit<Job, 'createdAt' | 'updatedAt'> & {
+    createdAt: string;
+    updatedAt: string;
+};
+
 
 // Client-side function
 export async function createJob(
@@ -39,16 +61,26 @@ export async function createJob(
   data: Omit<Job, 'uid' | 'employerId' | 'createdAt' | 'updatedAt' | 'status'>
 ): Promise<string> {
   const jobRef = doc(collection(db, 'jobs'));
-  await setDoc(jobRef, {
+  const newJobData = {
     ...data,
     uid: jobRef.id,
     employerId,
-    status: 'open',
+    status: 'open' as JobStatus,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+  await setDoc(jobRef, newJobData);
   return jobRef.id;
 }
+
+const jobFromDoc = (docSnap: any): Job => {
+    const data = docSnap.data() as JobDocument;
+    return {
+      ...data,
+      createdAt: data.createdAt.toDate(),
+      updatedAt: data.updatedAt.toDate(),
+    };
+};
 
 // Client-side function
 export async function getJob(uid: string): Promise<Job | null> {
@@ -56,7 +88,7 @@ export async function getJob(uid: string): Promise<Job | null> {
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    return docSnap.data() as Job;
+    return jobFromDoc(docSnap);
   } else {
     return null;
   }
@@ -66,23 +98,19 @@ export async function getJob(uid: string): Promise<Job | null> {
 export async function getJobsForEmployer(employerId: string): Promise<Job[]> {
     const q = query(collection(db, 'jobs'), where('employerId', '==', employerId));
     const querySnapshot = await getDocs(q);
-    const jobs: Job[] = [];
-    querySnapshot.forEach((doc) => {
-        jobs.push(doc.data() as Job);
-    });
-    return jobs;
+    return querySnapshot.docs.map(jobFromDoc);
 }
 
 // Server-side function for admin dashboard
-export async function getAllJobs(): Promise<Job[]> {
-    const jobsSnapshot = await adminDb.collection('jobs').get();
-    const jobs: Job[] = jobsSnapshot.docs.map(doc => {
-        const data = doc.data();
+export async function getAllJobs(): Promise<SerializableJob[]> {
+    const jobsSnapshot = await adminDb.collection('jobs').orderBy('createdAt', 'desc').get();
+    const jobs: SerializableJob[] = jobsSnapshot.docs.map(doc => {
+        const data = doc.data() as JobDocument;
         return {
           ...data,
-          createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate().toISOString() : null,
-          updatedAt: data.updatedAt ? (data.updatedAt as Timestamp).toDate().toISOString() : null,
-        } as Job;
+          createdAt: data.createdAt.toDate().toISOString(),
+          updatedAt: data.updatedAt.toDate().toISOString(),
+        };
     });
     return jobs;
 }
