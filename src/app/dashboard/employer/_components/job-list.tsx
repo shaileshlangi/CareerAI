@@ -106,15 +106,15 @@ export default function JobList({ jobs, onJobDeleted }: JobListProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link href={`/dashboard/employer/jobs/${job.uid}/edit`}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          <span>Edit</span>
+                        <Link href={`/dashboard/employer/jobs/${job.uid}/applicants`}>
+                            <Users className="mr-2 h-4 w-4" />
+                            <span>View Applicants</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                         <Link href={`/dashboard/employer/jobs/${job.uid}/applicants`}>
-                            <Users className="mr-2 h-4 w-4" />
-                            <span>View Applicants</span>
+                        <Link href={`/dashboard/employer/jobs/${job.uid}/edit`}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Edit</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDeleteClick(job.uid)}>
