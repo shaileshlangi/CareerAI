@@ -67,7 +67,7 @@ export default function JobDetailsPage() {
                 employerId: job.employerId,
             });
             setAlreadyApplied(true);
-            toast({ title: 'Success!', description: "Your application has been submitted." });
+            toast({ title: 'Success!', description: "Your application has been submitted. A confirmation email has been sent." });
         } catch (error) {
             console.error("Failed to apply", error);
             toast({ variant: 'destructive', title: 'Error', description: 'Failed to submit your application.' });
