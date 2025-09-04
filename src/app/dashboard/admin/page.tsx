@@ -63,6 +63,9 @@ export default function AdminDashboard() {
 
         if (user && !authLoading) {
             fetchData();
+        } else if (!authLoading) {
+            // If the user is not an admin, we don't need to fetch data.
+            setLoadingData(false);
         }
     }, [user, authLoading]);
 
@@ -70,7 +73,8 @@ export default function AdminDashboard() {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
     }
     
-    if (!user) {
+    if (!user || user.role !== 'admin') {
+        // This should be handled by the redirect, but as a fallback, render nothing.
         return null;
     }
 
