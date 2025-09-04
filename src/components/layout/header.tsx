@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
+import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 const navLinks = [
   { href: '/products', label: 'Products' },
@@ -15,6 +17,14 @@ const navLinks = [
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { isLoggedIn, loading } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    setIsOpen(false);
+    router.push('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -34,16 +44,32 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+          {isLoggedIn && (
+             <Link href="/dashboard" className="transition-colors hover:text-primary">
+              Dashboard
+            </Link>
+          )}
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <nav className="hidden items-center space-x-2 md:flex">
-            <Button variant="ghost" asChild>
-              <Link href="/login">Log In</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/signup">Sign Up</Link>
-            </Button>
-          </nav>
+          {!loading && (
+            <nav className="hidden items-center space-x-2 md:flex">
+              {isLoggedIn ? (
+                <Button variant="ghost" onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Log Out
+                </Button>
+              ) : (
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link href="/login">Log In</Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/signup">Sign Up</Link>
+                  </Button>
+                </>
+              )}
+            </nav>
+          )}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" className="md:hidden">
@@ -70,18 +96,34 @@ export default function Header() {
                         {link.label}
                       </Link>
                     ))}
+                     {isLoggedIn && (
+                      <Link href="/dashboard" className="text-lg font-medium transition-colors hover:text-primary" onClick={() => setIsOpen(false)}>
+                        Dashboard
+                      </Link>
+                    )}
                   </nav>
                 </div>
-                <div className="border-t pt-4">
-                  <div className="flex flex-col space-y-2">
-                    <Button variant="ghost" asChild>
-                      <Link href="/login" onClick={() => setIsOpen(false)}>Log In</Link>
-                    </Button>
-                    <Button asChild>
-                      <Link href="/signup" onClick={() => setIsOpen(false)}>Sign Up</Link>
-                    </Button>
+                {!loading && (
+                  <div className="border-t pt-4">
+                    <div className="flex flex-col space-y-2">
+                       {isLoggedIn ? (
+                        <Button variant="ghost" onClick={handleLogout}>
+                           <LogOut className="mr-2 h-4 w-4" />
+                           Log Out
+                        </Button>
+                      ) : (
+                        <>
+                          <Button variant="ghost" asChild>
+                            <Link href="/login" onClick={() => setIsOpen(false)}>Log In</Link>
+                          </Button>
+                          <Button asChild>
+                            <Link href="/signup" onClick={() => setIsOpen(false)}>Sign Up</Link>
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>
