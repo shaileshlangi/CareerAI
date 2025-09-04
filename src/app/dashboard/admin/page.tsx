@@ -14,7 +14,7 @@ import AdminJobList from './_components/job-list';
 
 // We need to adjust the Job and User types on the client to handle the serialized date
 type SerializableUser = Omit<User, 'createdAt'> & { createdAt: string | null };
-type SerializableJob = Omit<Job, 'createdAt' | 'updatedAt'> & { createdAt: string | null, updatedAt: string | null };
+type SerializableJob = Omit<Job, 'createdAt' | 'updatedAt'> & { createdAt: string | null; updatedAt: string | null };
 
 
 export default function AdminDashboard() {
