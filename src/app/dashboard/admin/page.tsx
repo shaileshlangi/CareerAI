@@ -71,7 +71,7 @@ export default function AdminDashboard() {
     }
     
     if (!user) {
-      return null;
+        return null;
     }
 
     const totalUsers = users.length;
