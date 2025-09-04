@@ -21,7 +21,7 @@ const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-  role: z.enum(['employer', 'recruiter']),
+  role: z.enum(['employer', 'recruiter', 'admin']),
 });
 
 export default function SignUpEmployerPage() {
@@ -98,6 +98,7 @@ export default function SignUpEmployerPage() {
                         <SelectContent>
                           <SelectItem value="employer">Company / Employer</SelectItem>
                           <SelectItem value="recruiter">Recruitment Agency</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
