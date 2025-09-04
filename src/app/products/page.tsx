@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Bot, FileText, Briefcase, LayoutDashboard } from 'lucide-react';
@@ -23,7 +24,7 @@ const products = [
     title: 'Job Posting',
     description: 'Reach thousands of qualified candidates by posting your job openings on our platform.',
     status: 'Live',
-    href: '/jobs/post'
+    href: '/signup-employer'
   },
   {
     icon: <LayoutDashboard className="h-8 w-8 text-primary" />,
