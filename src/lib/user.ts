@@ -65,6 +65,7 @@ export async function getUsers(uids: string[]): Promise<User[]> {
   if (uids.length === 0) {
     return [];
   }
+  // Firestore 'in' queries are limited to 10 elements. We might need to chunk this later.
   const q = query(collection(db, 'users'), where(documentId(), 'in', uids));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(userFromDoc);

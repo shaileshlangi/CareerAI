@@ -23,7 +23,7 @@ const formSchema = z.object({
 type JobFormValues = z.infer<typeof formSchema>;
 
 interface JobFormProps {
-  onSubmit: (values: Omit<Job, 'uid' | 'employerId' | 'createdAt' | 'updatedAt' | 'status' | 'skills'> & { skills: string[] }) => void;
+  onSubmit: (values: Omit<Job, 'uid' | 'employerId' | 'createdAt' | 'updatedAt' | 'status'>) => void;
   initialData?: Job;
 }
 
