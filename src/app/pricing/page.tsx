@@ -206,7 +206,7 @@ export default function PricingPage() {
                   </CardContent>
                   <CardFooter>
                     <Button className="w-full" variant={plan.isPopular ? 'default' : 'outline'}>
-                      {plan.price.monthly === 'Custom' ? 'Contact Sales' : 'Choose Plan'}
+                      {plan.price.monthly === 0 ? 'Get Started' : plan.price.monthly === 'Custom' ? 'Contact Sales' : 'Choose Plan'}
                     </Button>
                   </CardFooter>
                 </Card>
