@@ -134,7 +134,7 @@ export default function AdminDashboard() {
                      <Card>
                         <CardHeader>
                             <CardTitle>Job Management</CardTitle>
-                        </Header>
+                        </CardHeader>
                         <CardContent>
                            <AdminJobList jobs={jobs} />
                         </CardContent>
