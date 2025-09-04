@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export type UserRole = 'admin' | 'recruiter' | 'employer' | 'seeker';
@@ -28,4 +28,13 @@ export async function getUser(uid: string): Promise<User | null> {
   } else {
     return null;
   }
+}
+
+export async function getAllUsers(): Promise<User[]> {
+    const querySnapshot = await getDocs(collection(db, 'users'));
+    const users: User[] = [];
+    querySnapshot.forEach((doc) => {
+        users.push(doc.data() as User);
+    });
+    return users;
 }

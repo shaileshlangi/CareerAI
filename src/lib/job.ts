@@ -68,6 +68,15 @@ export async function getJobsForEmployer(employerId: string): Promise<Job[]> {
     return jobs;
 }
 
+export async function getAllJobs(): Promise<Job[]> {
+    const querySnapshot = await getDocs(collection(db, 'jobs'));
+    const jobs: Job[] = [];
+    querySnapshot.forEach((doc) => {
+        jobs.push(doc.data() as Job);
+    });
+    return jobs;
+}
+
 export async function updateJob(uid: string, data: Partial<Omit<Job, 'uid' | 'employerId' | 'createdAt'>>): Promise<void> {
     const jobRef = doc(db, 'jobs', uid);
     await updateDoc(jobRef, {
