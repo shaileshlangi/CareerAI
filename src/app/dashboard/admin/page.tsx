@@ -64,7 +64,7 @@ export default function AdminDashboard() {
         if (user) {
             fetchData();
         } else if (!authLoading) {
-            // If there's no user and auth is not loading, we can stop loading data.
+            // If there's no user and we're not loading auth, we don't need to fetch data.
             setLoadingData(false);
         }
     }, [user, authLoading]);
