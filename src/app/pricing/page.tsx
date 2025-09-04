@@ -13,17 +13,16 @@ const jobSeekerPlans = [
   {
     name: 'Free',
     price: { monthly: 0, yearly: 0 },
-    description: 'For casual job searching and getting started.',
+    description: 'Get started with the essentials for your job search.',
     features: ['AI Resume Parsing (basic extraction)', '1 Resume Conversion per month', 'Limited Job Applications'],
     isPopular: false,
   },
   {
     name: 'Smart',
     price: { monthly: 299, yearly: 2990 },
-    description: 'Step up your job search with powerful AI tools.',
+    description: 'Power up your job search with advanced AI tools.',
     features: [
       'Unlimited AI Resume Conversions',
-      'Resume Formatting for ATS Optimization',
       'AI Career Suggestions',
       'Apply up to 20 Jobs/Month',
     ],
@@ -32,10 +31,9 @@ const jobSeekerPlans = [
   {
     name: 'Pro',
     price: { monthly: 499, yearly: 4990 },
-    description: 'For serious job seekers aiming for the top.',
+    description: 'The ultimate toolkit for dedicated job seekers.',
     features: [
-      'Everything in Smart Plan',
-      'AI Interview Preparation (mock questions + feedback)',
+      'AI Interview Preparation',
       'Priority Resume Review by AI',
       'Unlimited Job Applications',
     ],
@@ -44,12 +42,12 @@ const jobSeekerPlans = [
   {
     name: 'Elite',
     price: { monthly: 999, yearly: 9990 },
-    description: 'The ultimate toolkit for your career.',
+    description: 'For those who want a premium, guided experience.',
     features: [
         'All Pro features',
-        'Premium Resume Templates (downloadable PDF/DOC)',
-        '1-on-1 AI Career Coaching Agent',
+        'Premium Resume Templates',
         'AI-generated Cover Letters',
+        '1-on-1 AI Career Coaching',
     ],
     isPopular: false,
   },
@@ -59,17 +57,16 @@ const employerPlans = [
     {
         name: 'Starter',
         price: { monthly: 1999, yearly: 19990 },
-        description: 'For small businesses with occasional hiring needs.',
+        description: 'Perfect for small businesses with occasional hiring needs.',
         features: ['Post up to 3 Jobs', 'Access to Candidate Search (Basic)', 'AI Matching Suggestions'],
         isPopular: false,
       },
       {
         name: 'Growth',
         price: { monthly: 6999, yearly: 69990 },
-        description: 'For growing companies that hire regularly.',
+        description: 'For growing companies hiring at a steady pace.',
         features: [
           'Post up to 15 Jobs',
-          'Advanced Candidate Search + Filters',
           'Resume Database Access (up to 100 profiles)',
           'AI Shortlisting Support',
         ],
@@ -78,12 +75,11 @@ const employerPlans = [
       {
         name: 'Enterprise',
         price: { monthly: 14999, yearly: 149990 },
-        description: 'For companies scaling their teams.',
+        description: 'For large companies scaling their teams.',
         features: [
             'Unlimited Job Posts',
             'Unlimited Candidate Search',
-            'AI Screening & Interview Scheduling Agent',
-            'Dedicated Account Manager (AI Agent)',
+            'AI Screening & Scheduling Agent',
             'Analytics Dashboard for Hiring'
         ],
         isPopular: false,
@@ -91,7 +87,7 @@ const employerPlans = [
       {
         name: 'Custom Corporate',
         price: { monthly: 'Custom', yearly: 'Custom' },
-        description: 'For large organizations with specific needs.',
+        description: 'Bespoke solutions for your organization.',
         features: [
           'Tailored Solutions for Bulk Hiring',
           'API Integrations with Company ATS',
@@ -118,99 +114,109 @@ export default function PricingPage() {
     return value;
   }
 
+  const getButtonText = (plan: { name: string; price: { monthly: number | string } }) => {
+    if (plan.price.monthly === 'Custom') {
+        return 'Contact Sales';
+    }
+    if (plan.price.monthly === 0) {
+        return 'Get Started';
+    }
+    return 'Subscribe';
+  }
+
   return (
-    <div className="py-12 md:py-20">
+    <div className="py-12 md:py-20 bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 dark:from-gray-900 dark:to-slate-900">
       <div className="container">
         <div className="text-center max-w-2xl mx-auto">
-          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Pricing Plans</h1>
+          <h1 className="font-headline text-4xl font-bold sm:text-5xl">Flexible Pricing for Everyone</h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Choose the perfect plan for your needs. Simple, transparent pricing.
+            Find the perfect plan to accelerate your career or your hiring process.
           </p>
         </div>
 
         <div className="flex justify-center items-center space-x-4 my-8">
-          <Label htmlFor="billing-cycle">Monthly</Label>
+          <Label htmlFor="billing-cycle" className="font-medium">Monthly</Label>
           <Switch
             id="billing-cycle"
             checked={billingCycle === 'yearly'}
             onCheckedChange={(checked) => setBillingCycle(checked ? 'yearly' : 'monthly')}
           />
-          <Label htmlFor="billing-cycle">
-            Yearly <span className="text-primary font-semibold">(Save ~16%)</span>
+          <Label htmlFor="billing-cycle" className="font-medium">
+            Yearly <span className="text-primary font-semibold">(Save up to 16%)</span>
           </Label>
         </div>
 
         <div className="mt-12">
             <h2 className="text-center font-headline text-3xl font-bold mb-8">For Job Seekers</h2>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 items-stretch">
               {plans.jobSeeker.map((plan) => (
-                <Card key={plan.name} className={cn('flex flex-col', plan.isPopular && 'border-primary ring-2 ring-primary')}>
+                <Card key={plan.name} className={cn('flex flex-col rounded-xl shadow-lg transition-transform hover:scale-[1.02]', plan.isPopular && 'border-primary ring-2 ring-primary')}>
                   {plan.isPopular && (
-                    <div className="py-1 px-4 bg-primary text-primary-foreground text-center text-sm font-semibold rounded-t-lg -mt-px">
+                    <div className="py-1.5 px-4 bg-primary text-primary-foreground text-center text-sm font-semibold rounded-t-xl -mt-px">
                       Most Popular
                     </div>
                   )}
-                  <CardHeader>
-                    <CardTitle>{plan.name}</CardTitle>
+                  <CardHeader className="pt-8">
+                    <CardTitle className="font-bold text-2xl">{plan.name}</CardTitle>
                     <CardDescription>{plan.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow">
                     <div className="flex items-baseline">
-                      <span className="text-4xl font-bold">{getPrice(plan.price)}</span>
+                      <span className="text-4xl font-extrabold tracking-tight">{getPrice(plan.price)}</span>
                       {typeof plan.price[billingCycle] === 'number' && plan.price.monthly !== 0 &&(
-                        <span className="ml-1 text-muted-foreground">/ {billingCycle === 'monthly' ? 'month' : 'year'}</span>
+                        <span className="ml-1.5 text-muted-foreground">/ {billingCycle === 'monthly' ? 'month' : 'year'}</span>
                       )}
                     </div>
                     <ul className="mt-6 space-y-3">
                       {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2">
-                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                        <li key={feature} className="flex items-start gap-3">
+                          <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                           <span className="text-muted-foreground">{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" variant={plan.isPopular ? 'default' : 'outline'}>
-                      {plan.price.monthly === 0 ? 'Get Started' : 'Choose Plan'}
+                  <CardFooter className="mt-4">
+                    <Button className="w-full" variant={plan.isPopular ? 'default' : 'outline'} size="lg">
+                      {getButtonText(plan)}
                     </Button>
                   </CardFooter>
                 </Card>
               ))}
             </div>
 
-            <h2 className="text-center font-headline text-3xl font-bold my-16">For Companies & Employers</h2>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <h2 className="text-center font-headline text-3xl font-bold mt-20 mb-8">For Companies</h2>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 items-stretch">
               {plans.employer.map((plan) => (
-                <Card key={plan.name} className={cn('flex flex-col', plan.isPopular && 'border-primary ring-2 ring-primary')}>
-                  {plan.isPopular && (
-                    <div className="py-1 px-4 bg-primary text-primary-foreground text-center text-sm font-semibold rounded-t-lg -mt-px">
+                <Card key={plan.name} className={cn('flex flex-col rounded-xl shadow-lg transition-transform hover:scale-[1.02]', plan.isPopular && 'border-primary ring-2 ring-primary')}>
+                   {plan.isPopular && (
+                    <div className="py-1.5 px-4 bg-primary text-primary-foreground text-center text-sm font-semibold rounded-t-xl -mt-px">
                       Most Popular
                     </div>
                   )}
-                  <CardHeader>
-                    <CardTitle>{plan.name}</CardTitle>
+                  <CardHeader className="pt-8">
+                    <CardTitle className="font-bold text-2xl">{plan.name}</CardTitle>
                     <CardDescription>{plan.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow">
                      <div className="flex items-baseline">
-                      <span className="text-4xl font-bold">{getPrice(plan.price)}</span>
+                      <span className="text-4xl font-extrabold tracking-tight">{getPrice(plan.price)}</span>
                       {typeof plan.price[billingCycle] === 'number' && plan.price.monthly !== 0 && (
-                        <span className="ml-1 text-muted-foreground">/ {billingCycle === 'monthly' ? 'month' : 'year'}</span>
+                        <span className="ml-1.5 text-muted-foreground">/ {billingCycle === 'monthly' ? 'month' : 'year'}</span>
                       )}
                     </div>
                     <ul className="mt-6 space-y-3">
                       {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2">
-                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                        <li key={feature} className="flex items-start gap-3">
+                          <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                           <span className="text-muted-foreground">{feature}</span>
                         </li>
                       ))}
                     </ul>
                   </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" variant={plan.isPopular ? 'default' : 'outline'}>
-                      {plan.price.monthly === 0 ? 'Get Started' : plan.price.monthly === 'Custom' ? 'Contact Sales' : 'Choose Plan'}
+                  <CardFooter className="mt-4">
+                    <Button className="w-full" variant={plan.isPopular ? 'default' : 'outline'} size="lg">
+                      {getButtonText(plan)}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -221,5 +227,3 @@ export default function PricingPage() {
     </div>
   );
 }
-
-    
