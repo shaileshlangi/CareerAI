@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { getJob, Job } from '@/lib/job';
-import { getApplicantsForJob, Applicant } from '@/lib/application';
+import { getApplicantsForJob, Applicant, updateApplicationStatus, ApplicationStatus } from '@/lib/application';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button }from "@/components/ui/button";
 import {
@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Bot } from 'lucide-react';
+import { Loader2, Bot, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +31,7 @@ export default function ApplicantsPage() {
   const [job, setJob] = useState<Job | null>(null);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -54,6 +55,24 @@ export default function ApplicantsPage() {
     }
     fetchData();
   }, [user, jobId, toast]);
+  
+  const handleInitiateInterview = async (applicationId: string) => {
+    setUpdatingId(applicationId);
+    try {
+        await updateApplicationStatus(applicationId, 'Interview');
+        setApplicants(prev => prev.map(a => 
+            a.application.uid === applicationId 
+                ? { ...a, application: { ...a.application, status: 'Interview' as ApplicationStatus } }
+                : a
+        ));
+        toast({ title: 'Success', description: 'Interview has been initiated for the candidate.' });
+    } catch (error) {
+        console.error("Failed to update application status", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not initiate interview.' });
+    } finally {
+        setUpdatingId(null);
+    }
+  };
 
   if (loading) {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
@@ -66,6 +85,18 @@ export default function ApplicantsPage() {
       </div>
     );
   }
+  
+  const getStatusBadge = (status: ApplicationStatus) => {
+    switch(status) {
+        case 'Interview':
+            return <Badge variant="default">{status}</Badge>
+        case 'Rejected':
+            return <Badge variant="destructive">{status}</Badge>
+        default:
+            return <Badge variant="secondary">{status}</Badge>
+    }
+  }
+
 
   return (
     <div className="container py-12">
@@ -104,13 +135,28 @@ export default function ApplicantsPage() {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{application.appliedAt.toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{application.status}</Badge>
+                      {getStatusBadge(application.status)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm" disabled>
-                        <Bot className="mr-2 h-4 w-4" />
-                        Start AI Interview
-                      </Button>
+                       {application.status === 'Submitted' ? (
+                         <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleInitiateInterview(application.uid)}
+                            disabled={updatingId === application.uid}
+                        >
+                            {updatingId === application.uid ? 
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 
+                                <Bot className="mr-2 h-4 w-4" />
+                            }
+                            Initiate AI Interview
+                        </Button>
+                       ) : (
+                        <Button variant="ghost" size="sm" disabled className="text-muted-foreground">
+                            <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                            Interview Initiated
+                        </Button>
+                       )}
                     </TableCell>
                   </TableRow>
                 ))

@@ -11,6 +11,7 @@ import {
   where,
   getDocs,
   Timestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { type Job, getJob } from '@/lib/job';
@@ -84,7 +85,9 @@ export async function getApplicantsForJob(jobId: string): Promise<Applicant[]> {
     const querySnapshot = await getDocs(q);
     
     const applications = querySnapshot.docs.map(applicationFromDoc);
-    const seekerIds = applications.map(app => app.seekerId);
+    if (applications.length === 0) return [];
+    
+    const seekerIds = [...new Set(applications.map(app => app.seekerId))];
 
     const users = await getUsers(seekerIds);
     const usersMap = new Map(users.map(u => [u.uid, u]));
@@ -107,4 +110,9 @@ export async function getApplicationsForSeeker(seekerId: string): Promise<Applic
     }));
 
     return results;
+}
+
+export async function updateApplicationStatus(applicationId: string, status: ApplicationStatus): Promise<void> {
+    const appRef = doc(db, 'applications', applicationId);
+    await updateDoc(appRef, { status });
 }
