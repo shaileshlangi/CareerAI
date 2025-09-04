@@ -30,7 +30,7 @@ const products = [
     icon: <LayoutDashboard className="h-8 w-8 text-primary" />,
     title: 'Agency Dashboard',
     description: 'A complete tool for recruitment agencies to manage candidates, clients, and jobs in one place.',
-    status: 'Beta',
+    status: 'Live',
     href: '/dashboard'
   },
 ];
@@ -59,7 +59,7 @@ export default function ProductsPage() {
                   <CardHeader className="p-0">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-xl">{product.title}</CardTitle>
-                      <Badge variant={product.status === 'Live' ? 'default' : 'secondary'}>{product.status}</Badge>
+                      <Badge variant={product.status === 'Live' ? 'default' : product.status === 'Coming Soon' ? 'outline' : 'secondary'}>{product.status}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0 mt-2">
