@@ -13,71 +13,88 @@ const jobSeekerPlans = [
     name: 'Free',
     price: { monthly: 0, yearly: 0 },
     description: 'For casual job searching and getting started.',
-    features: ['1 resume scan/month', 'Job search & apply', 'Basic profile'],
+    features: ['Upload resume', 'Apply to limited jobs', '1 free AI resume optimization'],
     isPopular: false,
   },
   {
-    name: 'Pro',
-    price: { monthly: 15, yearly: 144 },
-    description: 'For active job seekers who want an edge.',
+    name: 'Basic',
+    price: { monthly: 199, yearly: 1990 },
+    description: 'For those who want to step up their job search.',
     features: [
-      '10 resume scans/month',
-      'Advanced ATS optimization',
-      'Application tracking',
-      'Profile highlight',
-      'Priority support',
+      'Unlimited applications',
+      'AI resume optimization (up to 3/month)',
     ],
     isPopular: true,
   },
   {
+    name: 'Pro',
+    price: { monthly: 499, yearly: 4990 },
+    description: 'For serious job seekers aiming for the top.',
+    features: [
+      'Unlimited applications',
+      'Unlimited AI resume optimization',
+      'Mock AI telephonic interview',
+      'Job alerts',
+      'Priority profile',
+    ],
+    isPopular: false,
+  },
+  {
     name: 'Premium',
-    price: { monthly: 30, yearly: 288 },
+    price: { monthly: 999, yearly: 9990 },
     description: 'The ultimate toolkit for your career.',
     features: [
-      'Unlimited resume scans',
-      'AI interview prep',
-      'Direct recruiter messaging',
-      '1-on-1 career coaching session',
-      'All Pro features',
+        'All Pro features',
+        'AI online interview practice',
+        'Priority recruiter visibility'
     ],
     isPopular: false,
   },
 ];
 
 const employerPlans = [
-  {
-    name: 'Basic',
-    price: { monthly: 49, yearly: 490 },
-    description: 'For small businesses with occasional hiring needs.',
-    features: ['1 active job post', '50 applicant views/month', 'Company profile page'],
-    isPopular: false,
-  },
-  {
-    name: 'Growth',
-    price: { monthly: 199, yearly: 1990 },
-    description: 'For growing companies that hire regularly.',
-    features: [
-      '10 active job posts',
-      'Unlimited applicant views',
-      'Resume parsing & search',
-      'AI candidate matching',
-      'Branded job page',
-    ],
-    isPopular: true,
-  },
-  {
-    name: 'Enterprise',
-    price: { monthly: 'Custom', yearly: 'Custom' },
-    description: 'For large organizations and recruitment agencies.',
-    features: [
-      'Unlimited job posts',
-      'Full recruitment automation suite',
-      'AI interview agents',
-      'API access & integrations',
-      'Dedicated account manager',
-    ],
-    isPopular: false,
-  },
+    {
+        name: 'Free',
+        price: { monthly: 0, yearly: 0 },
+        description: 'For small businesses with occasional hiring needs.',
+        features: ['Post 1 job/month', 'Limited candidate views'],
+        isPopular: false,
+      },
+      {
+        name: 'Starter',
+        price: { monthly: 999, yearly: 9990 },
+        description: 'For growing companies that hire regularly.',
+        features: [
+          'Post up to 5 jobs',
+          'Shortlist candidates',
+          'View AI scores',
+        ],
+        isPopular: true,
+      },
+      {
+        name: 'Growth',
+        price: { monthly: 2499, yearly: 24990 },
+        description: 'For companies scaling their teams.',
+        features: [
+          'Post 15 jobs',
+          'Access candidate resume optimization',
+          'AI telephonic interview reports',
+        ],
+        isPopular: false,
+      },
+      {
+        name: 'Enterprise',
+        price: { monthly: 'Custom', yearly: 'Custom' },
+        description: 'For large organizations and recruitment agencies.',
+        features: [
+          'Unlimited jobs',
+          'Recruiter dashboard',
+          'Full AI online interview reports',
+          'Agency integration',
+          'Dedicated account manager',
+        ],
+        isPopular: false,
+      },
 ];
 
 
@@ -88,6 +105,14 @@ export default function PricingPage() {
     jobSeeker: jobSeekerPlans,
     employer: employerPlans,
   };
+
+  const getPrice = (price: { monthly: number | string, yearly: number | string }) => {
+    const value = price[billingCycle];
+    if (typeof value === 'number') {
+      return `₹${value.toLocaleString('en-IN')}`;
+    }
+    return value;
+  }
 
   return (
     <div className="py-12 md:py-20">
@@ -107,13 +132,13 @@ export default function PricingPage() {
             onCheckedChange={(checked) => setBillingCycle(checked ? 'yearly' : 'monthly')}
           />
           <Label htmlFor="billing-cycle">
-            Yearly <span className="text-primary font-semibold">(Save 20%)</span>
+            Yearly <span className="text-primary font-semibold">(Save ~16%)</span>
           </Label>
         </div>
 
         <div className="mt-12">
             <h2 className="text-center font-headline text-3xl font-bold mb-8">For Job Seekers</h2>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
               {plans.jobSeeker.map((plan) => (
                 <Card key={plan.name} className={cn('flex flex-col', plan.isPopular && 'border-primary ring-2 ring-primary')}>
                   {plan.isPopular && (
@@ -127,19 +152,15 @@ export default function PricingPage() {
                   </CardHeader>
                   <CardContent className="flex-grow">
                     <div className="flex items-baseline">
-                      {typeof plan.price[billingCycle] === 'number' ? (
-                        <>
-                          <span className="text-4xl font-bold">${plan.price[billingCycle]}</span>
-                          <span className="ml-1 text-muted-foreground">/ {billingCycle === 'monthly' ? 'month' : 'year'}</span>
-                        </>
-                      ) : (
-                        <span className="text-4xl font-bold">{plan.price.monthly}</span>
+                      <span className="text-4xl font-bold">{getPrice(plan.price)}</span>
+                      {typeof plan.price[billingCycle] === 'number' && plan.price.monthly !== 0 &&(
+                        <span className="ml-1 text-muted-foreground">/ {billingCycle === 'monthly' ? 'month' : 'year'}</span>
                       )}
                     </div>
                     <ul className="mt-6 space-y-3">
                       {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-2">
-                          <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                        <li key={feature} className="flex items-start gap-2">
+                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
                           <span className="text-muted-foreground">{feature}</span>
                         </li>
                       ))}
@@ -155,7 +176,7 @@ export default function PricingPage() {
             </div>
 
             <h2 className="text-center font-headline text-3xl font-bold my-16">For Companies & Employers</h2>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
               {plans.employer.map((plan) => (
                 <Card key={plan.name} className={cn('flex flex-col', plan.isPopular && 'border-primary ring-2 ring-primary')}>
                   {plan.isPopular && (
@@ -168,20 +189,16 @@ export default function PricingPage() {
                     <CardDescription>{plan.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow">
-                    <div className="flex items-baseline">
-                      {typeof plan.price[billingCycle] === 'number' ? (
-                        <>
-                          <span className="text-4xl font-bold">${plan.price[billingCycle]}</span>
-                          <span className="ml-1 text-muted-foreground">/ {billingCycle === 'monthly' ? 'month' : 'year'}</span>
-                        </>
-                      ) : (
-                        <span className="text-4xl font-bold">{plan.price.monthly}</span>
+                     <div className="flex items-baseline">
+                      <span className="text-4xl font-bold">{getPrice(plan.price)}</span>
+                      {typeof plan.price[billingCycle] === 'number' && plan.price.monthly !== 0 && (
+                        <span className="ml-1 text-muted-foreground">/ {billingCycle === 'monthly' ? 'month' : 'year'}</span>
                       )}
                     </div>
                     <ul className="mt-6 space-y-3">
                       {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-2">
-                          <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                        <li key={feature} className="flex items-start gap-2">
+                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
                           <span className="text-muted-foreground">{feature}</span>
                         </li>
                       ))}
