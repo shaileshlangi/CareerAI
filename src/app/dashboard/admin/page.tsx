@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getAllUsers, User } from '@/lib/user';
 import { getAllJobs, Job } from '@/lib/job';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Users, Briefcase, DollarSign, BarChart } from 'lucide-react';
+import { Loader2, Users, Briefcase, BarChart } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminUserList from './_components/user-list';
 import AdminJobList from './_components/job-list';
@@ -17,17 +17,20 @@ export default function AdminDashboard() {
     const router = useRouter();
     const [users, setUsers] = useState<User[]>([]);
     const [jobs, setJobs] = useState<Job[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loadingData, setLoadingData] = useState(true);
 
     useEffect(() => {
-        if (!authLoading && user?.role !== 'admin') {
-            router.push('/dashboard');
+        if (!authLoading) {
+            if (user?.role !== 'admin') {
+                router.push('/dashboard');
+            }
         }
     }, [user, authLoading, router]);
 
     useEffect(() => {
-        if (user?.role === 'admin') {
-            async function fetchData() {
+        async function fetchData() {
+            if (user?.role === 'admin') {
+                setLoadingData(true);
                 try {
                     const [fetchedUsers, fetchedJobs] = await Promise.all([
                         getAllUsers(),
@@ -38,14 +41,20 @@ export default function AdminDashboard() {
                 } catch (error) {
                     console.error("Failed to fetch admin data", error);
                 } finally {
-                    setLoading(false);
+                    setLoadingData(false);
                 }
             }
-            fetchData();
         }
-    }, [user]);
 
-    if (authLoading || loading) {
+        if (!authLoading && user) {
+            fetchData();
+        } else if (!authLoading && !user) {
+            // If not logged in and auth is done loading, no data to fetch
+            setLoadingData(false);
+        }
+    }, [user, authLoading]);
+
+    if (authLoading || loadingData) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
     }
     
@@ -107,7 +116,7 @@ export default function AdminDashboard() {
                      <Card>
                         <CardHeader>
                             <CardTitle>Job Management</CardTitle>
-                        </CardHeader>
+                        </Header>
                         <CardContent>
                            <AdminJobList jobs={jobs} />
                         </CardContent>
