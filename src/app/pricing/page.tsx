@@ -109,7 +109,7 @@ export default function PricingPage() {
   const getPrice = (price: { monthly: number | string, yearly: number | string }) => {
     const value = price[billingCycle];
     if (typeof value === 'number') {
-      return `₹${value.toLocaleString('en-IN')}`;
+      return `₹${value.toLocaleString()}`;
     }
     return value;
   }
