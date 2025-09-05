@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function ApplicantsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const params = useParams();
   const jobId = params.jobId as string;
   const { toast } = useToast();
@@ -37,7 +37,6 @@ export default function ApplicantsPage() {
     async function fetchData() {
       if (!user || !jobId) return;
       try {
-        setLoading(true);
         const fetchedJob = await getJob(jobId);
         if (fetchedJob && fetchedJob.employerId === user.uid) {
           setJob(fetchedJob);
@@ -53,8 +52,12 @@ export default function ApplicantsPage() {
         setLoading(false);
       }
     }
-    fetchData();
-  }, [user, jobId, toast]);
+    if (!authLoading) {
+        fetchData();
+    } else {
+        setLoading(false);
+    }
+  }, [user, jobId, toast, authLoading]);
   
   const handleInitiateInterview = async (applicationId: string) => {
     setUpdatingId(applicationId);
@@ -74,7 +77,7 @@ export default function ApplicantsPage() {
     }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
 
