@@ -10,7 +10,7 @@ import { PlusCircle, Loader2 } from 'lucide-react';
 import JobList from './_components/job-list';
 
 export default function EmployerDashboard() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,8 +27,10 @@ export default function EmployerDashboard() {
         }
       }
     }
-    fetchJobs();
-  }, [user]);
+    if (!authLoading) {
+        fetchJobs();
+    }
+  }, [user, authLoading]);
 
   const onJobDeleted = (jobId: string) => {
     setJobs(jobs.filter(job => job.uid !== jobId));
@@ -49,7 +51,7 @@ export default function EmployerDashboard() {
         </Button>
       </div>
 
-      {loading ? (
+      {loading || authLoading ? (
          <div className="flex justify-center items-center h-64">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
          </div>
