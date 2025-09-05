@@ -12,7 +12,7 @@ import { getApplicationsForSeeker, ApplicationWithJob } from '@/lib/application'
 import { Badge } from '@/components/ui/badge';
 
 export default function SeekerDashboard() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [applications, setApplications] = useState<ApplicationWithJob[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,12 +27,12 @@ export default function SeekerDashboard() {
         } finally {
           setLoading(false);
         }
-      } else if (user === null) {
+      } else if (!authLoading) { // If there is no user and we are not loading auth state
         setLoading(false);
       }
     }
     fetchApplications();
-  }, [user]);
+  }, [user, authLoading]);
 
   return (
     <div className="container py-12">
