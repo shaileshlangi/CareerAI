@@ -35,7 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setFirebaseUser(null);
         setUser(null);
       }
-      setLoading(false);
+      // Add a small delay to ensure firebase client is ready before setting loading to false
+      setTimeout(() => {
+        setLoading(false);
+      }, 100);
     });
 
     return () => unsubscribe();
