@@ -44,6 +44,8 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         async function fetchData() {
+            if (authLoading) return; // Do not fetch if auth is still loading
+            
             setLoadingData(true);
             try {
                 const [fetchedUsers, fetchedJobs] = await Promise.all([
