@@ -11,25 +11,28 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-        if (!user) {
-            router.replace('/login');
-            return;
-        }
-        switch (user.role) {
-            case 'admin':
-                router.replace('/dashboard/admin');
-                break;
-            case 'employer':
-                router.replace('/dashboard/employer');
-                break;
-            case 'seeker':
-                router.replace('/dashboard/seeker');
-                break;
-            default:
-                // Fallback for any other roles or if role is undefined
-                router.replace('/login');
-        }
+    if (loading) {
+      return; // Wait for authentication to complete
+    }
+
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
+
+    switch (user.role) {
+      case 'admin':
+        router.replace('/dashboard/admin');
+        break;
+      case 'employer':
+        router.replace('/dashboard/employer');
+        break;
+      case 'seeker':
+        router.replace('/dashboard/seeker');
+        break;
+      default:
+        // Fallback for any other roles or if role is undefined
+        router.replace('/login');
     }
   }, [user, loading, router]);
 
