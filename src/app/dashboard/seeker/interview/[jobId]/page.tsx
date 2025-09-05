@@ -32,8 +32,7 @@ export default function AIInterviewPage() {
       if (!user || !jobId) return;
       try {
         setLoading(true);
-        // For now, we fetch a mock job since we don't have real applications yet
-        const fetchedJob = await getJob("mock-job-1");
+        const fetchedJob = await getJob(jobId);
         setJob(fetchedJob);
       } catch (error) {
         console.error("Failed to fetch job", error);
