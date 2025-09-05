@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Loader2 } from 'lucide-react';
 
 export default function EditJobPage() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const params = useParams();
@@ -21,7 +21,10 @@ export default function EditJobPage() {
 
     useEffect(() => {
         async function fetchJob() {
-            if (!user || !jobId) return;
+            if (!user || !jobId) {
+                setLoading(false);
+                return;
+            };
             try {
                 const fetchedJob = await getJob(jobId);
                 if (fetchedJob && fetchedJob.employerId === user.uid) {
@@ -36,8 +39,10 @@ export default function EditJobPage() {
                 setLoading(false);
             }
         }
-        fetchJob();
-    }, [user, jobId, router, toast]);
+        if (!authLoading) {
+            fetchJob();
+        }
+    }, [user, jobId, router, toast, authLoading]);
 
     const handleSubmit = async (values: Omit<Job, 'uid' | 'employerId' | 'createdAt' | 'updatedAt' | 'status'>) => {
         if (!jobId) return;
@@ -52,7 +57,7 @@ export default function EditJobPage() {
         }
     };
 
-    if (loading) {
+    if (loading || authLoading) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
     }
 
