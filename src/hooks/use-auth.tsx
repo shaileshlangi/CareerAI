@@ -16,21 +16,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const publicRoutes = ['/login', '/signup', '/signup-seeker', '/signup-employer', '/pricing', '/products', '/about', '/contact', '/privacy', '/terms', '/'];
-
-// A list of pages that start with a public route but might have private sub-routes
-const publicRoutePrefixes = ['/jobs/', '/products/'];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true); // Ensure loading is true while we process the auth change
+      setLoading(true);
       if (user) {
         setFirebaseUser(user);
         try {
@@ -38,9 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(userProfile);
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
-          // Handle case where user exists in auth but not in DB
-          setFirebaseUser(null);
           setUser(null);
+          setFirebaseUser(null);
         }
       } else {
         setFirebaseUser(null);
@@ -53,18 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
   
   const isLoggedIn = !!firebaseUser;
-
-  useEffect(() => {
-    if (!loading) {
-      const isPublic = publicRoutes.includes(pathname) || 
-                       publicRoutePrefixes.some(prefix => pathname.startsWith(prefix));
-
-      if (!isLoggedIn && !isPublic) {
-        router.push('/login');
-      }
-    }
-  }, [loading, isLoggedIn, pathname, router]);
-
 
   return (
     <AuthContext.Provider value={{ user, firebaseUser, loading, isLoggedIn }}>
