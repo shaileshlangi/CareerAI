@@ -5,7 +5,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { getUser, User } from '@/lib/user';
-import { usePathname, useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
@@ -22,23 +21,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(true);
-      if (user) {
-        setFirebaseUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        setFirebaseUser(fbUser);
         try {
-          const userProfile = await getUser(user.uid);
+          // Keep loading until the user profile is fetched
+          const userProfile = await getUser(fbUser.uid);
           setUser(userProfile);
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
+          // If profile fails, treat as logged out
           setUser(null);
           setFirebaseUser(null);
+        } finally {
+          setLoading(false);
         }
       } else {
         setFirebaseUser(null);
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
