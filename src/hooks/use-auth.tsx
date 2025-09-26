@@ -22,32 +22,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setLoading(true); // Ensure we are in a loading state during auth change
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
-          // Keep loading until the user profile is fetched
           const userProfile = await getUser(fbUser.uid);
           setUser(userProfile);
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
-          // If profile fails, treat as logged out
-          setUser(null);
-          setFirebaseUser(null);
-        } finally {
-          setLoading(false);
+          setUser(null); // Ensure user is null if profile fetch fails
         }
       } else {
         setFirebaseUser(null);
         setUser(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
   
-  const isLoggedIn = !!firebaseUser;
+  const isLoggedIn = !loading && !!firebaseUser;
 
   return (
     <AuthContext.Provider value={{ user, firebaseUser, loading, isLoggedIn }}>
