@@ -16,7 +16,7 @@ export default function JobDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const jobId = params.jobId as string;
-    const { user, isLoggedIn } = useAuth();
+    const { user, isLoggedIn, loading: authLoading } = useAuth();
     const { toast } = useToast();
 
     const [job, setJob] = useState<Job | null>(null);
@@ -38,8 +38,10 @@ export default function JobDetailsPage() {
                 setLoading(false);
             }
         }
-        fetchJobDetails();
-    }, [jobId, toast]);
+        if (!authLoading) {
+            fetchJobDetails();
+        }
+    }, [jobId, toast, authLoading]);
 
     useEffect(() => {
         async function checkApplicationStatus() {
@@ -48,8 +50,10 @@ export default function JobDetailsPage() {
                 setAlreadyApplied(applied);
             }
         }
-        checkApplicationStatus();
-    }, [user, job]);
+        if (!authLoading) {
+            checkApplicationStatus();
+        }
+    }, [user, job, authLoading]);
 
     const handleApply = async () => {
         if (!isLoggedIn || !user) {
@@ -76,7 +80,7 @@ export default function JobDetailsPage() {
         }
     };
 
-    if (loading) {
+    if (loading || authLoading) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
     }
 
