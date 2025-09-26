@@ -18,26 +18,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start with loading as true
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      // This block runs when Firebase has determined the auth state.
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
+          // Wait for the user profile to be fetched
           const userProfile = await getUser(fbUser.uid);
           setUser(userProfile);
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
-          setUser(null); // Ensure user is null if profile fetch fails
+          setUser(null);
         }
       } else {
         setFirebaseUser(null);
         setUser(null);
       }
+      // Only set loading to false after all async operations are complete.
       setLoading(false);
     });
 
+    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
   
