@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirestore } from '@/hooks/use-auth';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,14 +13,15 @@ import { Badge } from '@/components/ui/badge';
 
 export default function SeekerDashboard() {
   const { user, loading: authLoading } = useAuth();
+  const db = useFirestore();
   const [applications, setApplications] = useState<ApplicationWithJob[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchApplications() {
-      if (user) {
+      if (user && db) {
         try {
-          const fetchedApplications = await getApplicationsForSeeker(user.uid);
+          const fetchedApplications = await getApplicationsForSeeker(db, user.uid);
           setApplications(fetchedApplications);
         } catch (error) {
           console.error("Failed to fetch applications", error);
@@ -32,7 +33,7 @@ export default function SeekerDashboard() {
       }
     }
     fetchApplications();
-  }, [user, authLoading]);
+  }, [user, authLoading, db]);
 
   return (
     <div className="container py-12">
@@ -45,7 +46,7 @@ export default function SeekerDashboard() {
           <CardDescription>Here are the jobs you've applied for.</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {loading || authLoading ? (
             <div className="flex justify-center items-center h-48">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>

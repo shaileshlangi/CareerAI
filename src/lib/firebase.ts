@@ -1,7 +1,5 @@
 
 import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   projectId: 'careerai-vx48i',
@@ -24,6 +22,4 @@ const initializeClientApp = () => {
     return app;
 }
 
-// We are not exporting the initialized app directly anymore.
-// We will get them from the provider.
 export { initializeClientApp, firebaseConfig };

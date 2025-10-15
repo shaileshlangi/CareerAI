@@ -8,15 +8,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, MapPin, Briefcase, IndianRupee } from 'lucide-react';
 import Link from 'next/link';
+import { useFirestore } from '@/hooks/use-auth';
 
 export default function JobBoardPage() {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
+    const db = useFirestore();
 
     useEffect(() => {
         async function fetchJobs() {
+            if (!db) return;
             try {
-                const openJobs = await getJobs('open');
+                const openJobs = await getJobs(db, 'open');
                 setJobs(openJobs);
             } catch (error) {
                 console.error("Failed to fetch jobs", error);
@@ -25,7 +28,7 @@ export default function JobBoardPage() {
             }
         }
         fetchJobs();
-    }, []);
+    }, [db]);
 
     return (
         <div className="py-12 md:py-20">
@@ -38,7 +41,7 @@ export default function JobBoardPage() {
                 </div>
 
                 <div className="mt-12">
-                    {loading ? (
+                    {loading || !db ? (
                         <div className="flex justify-center items-center h-64">
                             <Loader2 className="h-12 w-12 animate-spin text-primary" />
                         </div>

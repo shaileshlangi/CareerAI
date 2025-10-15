@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirestore } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { getJob, updateJob, Job } from '@/lib/job';
 import JobForm from '../../_components/job-form';
@@ -12,6 +12,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function EditJobPage() {
     const { user, loading: authLoading } = useAuth();
+    const db = useFirestore();
     const router = useRouter();
     const { toast } = useToast();
     const params = useParams();
@@ -21,12 +22,12 @@ export default function EditJobPage() {
 
     useEffect(() => {
         async function fetchJob() {
-            if (!user || !jobId) {
+            if (!user || !jobId || !db) {
                 setLoading(false);
                 return;
             };
             try {
-                const fetchedJob = await getJob(jobId);
+                const fetchedJob = await getJob(db, jobId);
                 if (fetchedJob && fetchedJob.employerId === user.uid) {
                     setJob(fetchedJob);
                 } else {
@@ -42,13 +43,13 @@ export default function EditJobPage() {
         if (!authLoading) {
             fetchJob();
         }
-    }, [user, jobId, router, toast, authLoading]);
+    }, [user, jobId, router, toast, authLoading, db]);
 
     const handleSubmit = async (values: Omit<Job, 'uid' | 'employerId' | 'createdAt' | 'updatedAt' | 'status'>) => {
-        if (!jobId) return;
+        if (!jobId || !db) return;
 
         try {
-            await updateJob(jobId, values);
+            await updateJob(db, jobId, values);
             toast({ title: 'Success', description: 'Job has been updated.' });
             router.push('/dashboard/employer');
         } catch (error) {
@@ -57,7 +58,7 @@ export default function EditJobPage() {
         }
     };
 
-    if (loading || authLoading) {
+    if (loading || authLoading || !db) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
     }
 

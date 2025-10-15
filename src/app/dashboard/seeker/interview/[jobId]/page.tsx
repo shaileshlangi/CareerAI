@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirestore } from '@/hooks/use-auth';
 import { getJob, Job } from '@/lib/job';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress';
 
 export default function AIInterviewPage() {
   const { user } = useAuth();
+  const db = useFirestore();
   const params = useParams();
   const jobId = params.jobId as string;
   const { toast } = useToast();
@@ -29,10 +30,10 @@ export default function AIInterviewPage() {
 
   useEffect(() => {
     async function fetchJob() {
-      if (!user || !jobId) return;
+      if (!user || !jobId || !db) return;
       try {
         setLoading(true);
-        const fetchedJob = await getJob(jobId);
+        const fetchedJob = await getJob(db, jobId);
         setJob(fetchedJob);
       } catch (error) {
         console.error("Failed to fetch job", error);
@@ -42,7 +43,7 @@ export default function AIInterviewPage() {
       }
     }
     fetchJob();
-  }, [user, jobId, toast]);
+  }, [user, jobId, toast, db]);
 
   useEffect(() => {
     const getCameraPermission = async () => {

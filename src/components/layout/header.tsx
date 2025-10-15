@@ -8,21 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { getAuth } from 'firebase/auth';
-
-const navLinks = [
-  { href: '/products', label: 'Products' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/jobs', label: 'Job Board' },
-];
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, loading, isLoggedIn } = useAuth();
+  const { loading, isLoggedIn, auth } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
-    const auth = getAuth();
+    if (!auth) return;
     await auth.signOut();
     setIsOpen(false);
     router.push('/');
@@ -134,3 +127,9 @@ export default function Header() {
     </header>
   );
 }
+
+const navLinks = [
+  { href: '/products', label: 'Products' },
+  { href: '/pricing', label: 'Pricing' },
+  { href: '/jobs', label: 'Job Board' },
+];

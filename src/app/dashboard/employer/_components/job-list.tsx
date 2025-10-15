@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { useFirestore } from '@/hooks/use-auth';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -40,6 +41,7 @@ interface JobListProps {
 
 export default function JobList({ jobs, onJobDeleted }: JobListProps) {
   const { toast } = useToast();
+  const db = useFirestore();
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
 
@@ -49,9 +51,9 @@ export default function JobList({ jobs, onJobDeleted }: JobListProps) {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!jobToDelete) return;
+    if (!jobToDelete || !db) return;
     try {
-      await deleteJob(jobToDelete);
+      await deleteJob(db, jobToDelete);
       onJobDeleted(jobToDelete);
       toast({
         title: "Success",

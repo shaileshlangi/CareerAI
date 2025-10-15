@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirestore } from '@/hooks/use-auth';
 import { getJob, Job } from '@/lib/job';
 import { createApplication, hasUserApplied } from '@/lib/application';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +17,7 @@ export default function JobDetailsPage() {
     const router = useRouter();
     const jobId = params.jobId as string;
     const { user, isLoggedIn, loading: authLoading } = useAuth();
+    const db = useFirestore();
     const { toast } = useToast();
 
     const [job, setJob] = useState<Job | null>(null);
@@ -26,10 +27,10 @@ export default function JobDetailsPage() {
 
     useEffect(() => {
         async function fetchJobDetails() {
-            if (!jobId) return;
+            if (!jobId || !db) return;
             try {
                 setLoading(true);
-                const fetchedJob = await getJob(jobId);
+                const fetchedJob = await getJob(db, jobId);
                 setJob(fetchedJob);
             } catch (error) {
                 console.error("Failed to fetch job details", error);
@@ -41,19 +42,19 @@ export default function JobDetailsPage() {
         if (!authLoading) {
             fetchJobDetails();
         }
-    }, [jobId, toast, authLoading]);
+    }, [jobId, toast, authLoading, db]);
 
     useEffect(() => {
         async function checkApplicationStatus() {
-            if (user && job) {
-                const applied = await hasUserApplied(user.uid, job.uid);
+            if (user && job && db) {
+                const applied = await hasUserApplied(db, user.uid, job.uid);
                 setAlreadyApplied(applied);
             }
         }
         if (!authLoading) {
             checkApplicationStatus();
         }
-    }, [user, job, authLoading]);
+    }, [user, job, authLoading, db]);
 
     const handleApply = async () => {
         if (!isLoggedIn || !user) {
@@ -61,11 +62,11 @@ export default function JobDetailsPage() {
             return;
         }
 
-        if (!job) return;
+        if (!job || !db) return;
 
         setApplying(true);
         try {
-            await createApplication({
+            await createApplication(db, {
                 jobId: job.uid,
                 seekerId: user.uid,
                 employerId: job.employerId,
@@ -80,7 +81,7 @@ export default function JobDetailsPage() {
         }
     };
 
-    if (loading || authLoading) {
+    if (loading || authLoading || !db) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
     }
 

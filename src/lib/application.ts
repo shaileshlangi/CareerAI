@@ -12,11 +12,10 @@ import {
   getDocs,
   Timestamp,
   updateDoc,
-  getFirestore,
+  Firestore,
 } from 'firebase/firestore';
 import { type Job, getJob } from '@/lib/job';
 import { type User, getUsers } from '@/lib/user';
-import { getApp } from 'firebase/app';
 import { adminDb } from './firebase-admin';
 
 export type ApplicationStatus = 'Submitted' | 'Reviewed' | 'Interview' | 'Offered' | 'Rejected';
@@ -59,9 +58,9 @@ const applicationFromDoc = (docSnap: any): Application => {
 };
 
 export async function createApplication(
+  db: Firestore,
   data: Omit<Application, 'uid' | 'appliedAt' | 'status'>
 ): Promise<string> {
-    const db = getFirestore(getApp());
     const appRef = doc(collection(db, 'applications'));
     const newApplicationData = {
       uid: appRef.id,
@@ -73,8 +72,7 @@ export async function createApplication(
   return appRef.id;
 }
 
-export async function hasUserApplied(seekerId: string, jobId: string): Promise<boolean> {
-    const db = getFirestore(getApp());
+export async function hasUserApplied(db: Firestore, seekerId: string, jobId: string): Promise<boolean> {
     const q = query(
         collection(db, 'applications'),
         where('seekerId', '==', seekerId),
@@ -84,8 +82,7 @@ export async function hasUserApplied(seekerId: string, jobId: string): Promise<b
     return !querySnapshot.empty;
 }
 
-export async function getApplicantsForJob(jobId: string): Promise<Applicant[]> {
-    const db = getFirestore(getApp());
+export async function getApplicantsForJob(db: Firestore, jobId: string): Promise<Applicant[]> {
     const q = query(collection(db, 'applications'), where('jobId', '==', jobId));
     const querySnapshot = await getDocs(q);
     
@@ -94,7 +91,7 @@ export async function getApplicantsForJob(jobId: string): Promise<Applicant[]> {
     
     const seekerIds = [...new Set(applications.map(app => app.seekerId))];
 
-    const users = await getUsers(seekerIds);
+    const users = await getUsers(db, seekerIds);
     const usersMap = new Map(users.map(u => [u.uid, u]));
 
     return applications.map(application => ({
@@ -103,23 +100,21 @@ export async function getApplicantsForJob(jobId: string): Promise<Applicant[]> {
     })).filter(a => a.user);
 }
 
-export async function getApplicationsForSeeker(seekerId: string): Promise<ApplicationWithJob[]> {
-    const db = getFirestore(getApp());
+export async function getApplicationsForSeeker(db: Firestore, seekerId: string): Promise<ApplicationWithJob[]> {
     const q = query(collection(db, 'applications'), where('seekerId', '==', seekerId));
     const querySnapshot = await getDocs(q);
 
     const applications = querySnapshot.docs.map(applicationFromDoc);
 
     const results = await Promise.all(applications.map(async (application) => {
-        const job = await getJob(application.jobId);
+        const job = await getJob(db, application.jobId);
         return { application, job };
     }));
 
     return results;
 }
 
-export async function updateApplicationStatus(applicationId: string, status: ApplicationStatus): Promise<void> {
-    const db = getFirestore(getApp());
+export async function updateApplicationStatus(db: Firestore, applicationId: string, status: ApplicationStatus): Promise<void> {
     const appRef = doc(db, 'applications', applicationId);
     await updateDoc(appRef, { status });
 }

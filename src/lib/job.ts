@@ -13,10 +13,9 @@ import {
   deleteDoc,
   updateDoc,
   Timestamp,
-  getFirestore,
+  Firestore,
 } from 'firebase/firestore';
 import { adminDb } from '@/lib/firebase-admin';
-import { getApp } from 'firebase/app';
 
 export type JobStatus = 'open' | 'closed';
 
@@ -58,10 +57,10 @@ export type SerializableJob = Omit<Job, 'createdAt' | 'updatedAt'> & {
 
 // Client-side function
 export async function createJob(
+  db: Firestore,
   employerId: string,
   data: Omit<Job, 'uid' | 'employerId' | 'createdAt' | 'updatedAt' | 'status'>
 ): Promise<string> {
-    const db = getFirestore(getApp());
     const jobRef = doc(collection(db, 'jobs'));
     const newJobData = {
       uid: jobRef.id,
@@ -86,8 +85,7 @@ const jobFromDoc = (docSnap: any): Job => {
 };
 
 // Client-side function
-export async function getJob(uid: string): Promise<Job | null> {
-  const db = getFirestore(getApp());
+export async function getJob(db: Firestore, uid: string): Promise<Job | null> {
   const docRef = doc(db, 'jobs', uid);
   const docSnap = await getDoc(docRef);
 
@@ -99,8 +97,7 @@ export async function getJob(uid: string): Promise<Job | null> {
 }
 
 // Client-side function
-export async function getJobs(status: JobStatus = 'open'): Promise<Job[]> {
-    const db = getFirestore(getApp());
+export async function getJobs(db: Firestore, status: JobStatus = 'open'): Promise<Job[]> {
     const q = query(collection(db, 'jobs'), where('status', '==', status));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(jobFromDoc);
@@ -108,8 +105,7 @@ export async function getJobs(status: JobStatus = 'open'): Promise<Job[]> {
 
 
 // Client-side function
-export async function getJobsForEmployer(employerId: string): Promise<Job[]> {
-    const db = getFirestore(getApp());
+export async function getJobsForEmployer(db: Firestore, employerId: string): Promise<Job[]> {
     const q = query(collection(db, 'jobs'), where('employerId', '==', employerId));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(jobFromDoc);
@@ -130,8 +126,7 @@ export async function getAllJobs(): Promise<SerializableJob[]> {
 }
 
 // Client-side function
-export async function updateJob(uid: string, data: Partial<Omit<Job, 'uid' | 'employerId' | 'createdAt'>>): Promise<void> {
-    const db = getFirestore(getApp());
+export async function updateJob(db: Firestore, uid: string, data: Partial<Omit<Job, 'uid' | 'employerId' | 'createdAt'>>): Promise<void> {
     const jobRef = doc(db, 'jobs', uid);
     await updateDoc(jobRef, {
         ...data,
@@ -140,8 +135,7 @@ export async function updateJob(uid: string, data: Partial<Omit<Job, 'uid' | 'em
 }
 
 // Client-side function
-export async function deleteJob(uid: string): Promise<void> {
-    const db = getFirestore(getApp());
+export async function deleteJob(db: Firestore, uid: string): Promise<void> {
     const jobRef = doc(db, 'jobs', uid);
     await deleteDoc(jobRef);
 }

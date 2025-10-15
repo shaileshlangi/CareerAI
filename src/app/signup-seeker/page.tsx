@@ -7,13 +7,14 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { createUser } from '@/lib/user';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
@@ -26,6 +27,7 @@ const formSchema = z.object({
 export default function SignUpSeekerPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { auth, db } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -39,13 +41,13 @@ export default function SignUpSeekerPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!auth || !db) return;
     setIsLoading(true);
     try {
-      const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
       
-      await createUser(user.uid, {
+      await createUser(db, user.uid, {
         displayName: values.name,
         email: values.email,
         phone: values.phone,
@@ -136,7 +138,7 @@ export default function SignUpSeekerPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading || !auth || !db}>
                   {isLoading ? <Loader2 className="animate-spin" /> : 'Create Account'}
                 </Button>
               </form>

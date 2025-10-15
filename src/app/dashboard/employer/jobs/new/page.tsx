@@ -3,24 +3,25 @@
 
 import JobForm from "../_components/job-form";
 import { createJob, Job } from '@/lib/job';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirestore } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export default function NewJobPage() {
     const { user } = useAuth();
+    const db = useFirestore();
     const router = useRouter();
     const { toast } = useToast();
 
     const handleSubmit = async (values: Omit<Job, 'uid' | 'employerId' | 'createdAt' | 'updatedAt' | 'status'>) => {
-        if (!user) {
+        if (!user || !db) {
             toast({ variant: "destructive", title: "Error", description: "You must be logged in to post a job." });
             return;
         }
 
         try {
-            await createJob(user.uid, values);
+            await createJob(db, user.uid, values);
             toast({ title: "Success", description: "Your job has been posted." });
             router.push('/dashboard/employer');
         } catch (error) {

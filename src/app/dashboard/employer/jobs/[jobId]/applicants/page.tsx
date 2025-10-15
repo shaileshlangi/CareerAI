@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirestore } from '@/hooks/use-auth';
 import { getJob, Job } from '@/lib/job';
 import { getApplicantsForJob, Applicant, updateApplicationStatus, ApplicationStatus } from '@/lib/application';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function ApplicantsPage() {
   const { user, loading: authLoading } = useAuth();
+  const db = useFirestore();
   const params = useParams();
   const jobId = params.jobId as string;
   const { toast } = useToast();
@@ -35,12 +36,12 @@ export default function ApplicantsPage() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!user || !jobId) return;
+      if (!user || !jobId || !db) return;
       try {
-        const fetchedJob = await getJob(jobId);
+        const fetchedJob = await getJob(db, jobId);
         if (fetchedJob && fetchedJob.employerId === user.uid) {
           setJob(fetchedJob);
-          const fetchedApplicants = await getApplicantsForJob(jobId); 
+          const fetchedApplicants = await getApplicantsForJob(db, jobId); 
           setApplicants(fetchedApplicants);
         } else {
           toast({ variant: 'destructive', title: 'Error', description: 'Job not found or you do not have permission to view it.' });
@@ -57,12 +58,13 @@ export default function ApplicantsPage() {
     } else {
         setLoading(false);
     }
-  }, [user, jobId, toast, authLoading]);
+  }, [user, jobId, toast, authLoading, db]);
   
   const handleInitiateInterview = async (applicationId: string) => {
+    if (!db) return;
     setUpdatingId(applicationId);
     try {
-        await updateApplicationStatus(applicationId, 'Interview');
+        await updateApplicationStatus(db, applicationId, 'Interview');
         setApplicants(prev => prev.map(a => 
             a.application.uid === applicationId 
                 ? { ...a, application: { ...a.application, status: 'Interview' as ApplicationStatus } }
@@ -77,7 +79,7 @@ export default function ApplicantsPage() {
     }
   };
 
-  if (loading || authLoading) {
+  if (loading || authLoading || !db) {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
 

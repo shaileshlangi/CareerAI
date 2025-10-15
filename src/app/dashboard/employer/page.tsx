@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirestore } from '@/hooks/use-auth';
 import { getJobsForEmployer, Job } from '@/lib/job';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -11,14 +11,15 @@ import JobList from './_components/job-list';
 
 export default function EmployerDashboard() {
   const { user, loading: authLoading } = useAuth();
+  const db = useFirestore();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchJobs() {
-      if (user) {
+      if (user && db) {
         try {
-          const fetchedJobs = await getJobsForEmployer(user.uid);
+          const fetchedJobs = await getJobsForEmployer(db, user.uid);
           setJobs(fetchedJobs);
         } catch (error) {
             console.error("Failed to fetch jobs", error)
@@ -30,7 +31,7 @@ export default function EmployerDashboard() {
     if (!authLoading) {
         fetchJobs();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, db]);
 
   const onJobDeleted = (jobId: string) => {
     setJobs(jobs.filter(job => job.uid !== jobId));
