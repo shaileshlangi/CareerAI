@@ -2,9 +2,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, User as FirebaseUser, getAuth } from 'firebase/auth';
 import { getUser, User } from '@/lib/user';
+import { initializeClientApp } from '@/lib/firebase';
+import { getFirestore } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -18,15 +19,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); // Start with loading as true
+  const [loading, setLoading] = useState(true);
+  const [firebaseReady, setFirebaseReady] = useState(false);
 
   useEffect(() => {
+    // Initialize Firebase and get the auth instance
+    const app = initializeClientApp();
+    const auth = getAuth(app);
+    getFirestore(app); // Initialize Firestore as well
+    setFirebaseReady(true);
+
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      // This block runs when Firebase has determined the auth state.
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
-          // Wait for the user profile to be fetched
           const userProfile = await getUser(fbUser.uid);
           setUser(userProfile);
         } catch (error) {
@@ -37,19 +43,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setFirebaseUser(null);
         setUser(null);
       }
-      // Only set loading to false after all async operations are complete.
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
   
   const isLoggedIn = !loading && !!firebaseUser;
 
+  // Do not render children until firebase is ready and auth state is determined
+  const isReady = firebaseReady && !loading;
+
   return (
     <AuthContext.Provider value={{ user, firebaseUser, loading, isLoggedIn }}>
-      {children}
+      {isReady ? children : null}
     </AuthContext.Provider>
   );
 }

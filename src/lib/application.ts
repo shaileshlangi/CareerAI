@@ -12,10 +12,12 @@ import {
   getDocs,
   Timestamp,
   updateDoc,
+  getFirestore,
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { type Job, getJob } from '@/lib/job';
 import { type User, getUsers } from '@/lib/user';
+import { getApp } from 'firebase/app';
+import { adminDb } from './firebase-admin';
 
 export type ApplicationStatus = 'Submitted' | 'Reviewed' | 'Interview' | 'Offered' | 'Rejected';
 
@@ -59,6 +61,7 @@ const applicationFromDoc = (docSnap: any): Application => {
 export async function createApplication(
   data: Omit<Application, 'uid' | 'appliedAt' | 'status'>
 ): Promise<string> {
+    const db = getFirestore(getApp());
     const appRef = doc(collection(db, 'applications'));
     const newApplicationData = {
       uid: appRef.id,
@@ -71,6 +74,7 @@ export async function createApplication(
 }
 
 export async function hasUserApplied(seekerId: string, jobId: string): Promise<boolean> {
+    const db = getFirestore(getApp());
     const q = query(
         collection(db, 'applications'),
         where('seekerId', '==', seekerId),
@@ -81,6 +85,7 @@ export async function hasUserApplied(seekerId: string, jobId: string): Promise<b
 }
 
 export async function getApplicantsForJob(jobId: string): Promise<Applicant[]> {
+    const db = getFirestore(getApp());
     const q = query(collection(db, 'applications'), where('jobId', '==', jobId));
     const querySnapshot = await getDocs(q);
     
@@ -99,6 +104,7 @@ export async function getApplicantsForJob(jobId: string): Promise<Applicant[]> {
 }
 
 export async function getApplicationsForSeeker(seekerId: string): Promise<ApplicationWithJob[]> {
+    const db = getFirestore(getApp());
     const q = query(collection(db, 'applications'), where('seekerId', '==', seekerId));
     const querySnapshot = await getDocs(q);
 
@@ -113,6 +119,7 @@ export async function getApplicationsForSeeker(seekerId: string): Promise<Applic
 }
 
 export async function updateApplicationStatus(applicationId: string, status: ApplicationStatus): Promise<void> {
+    const db = getFirestore(getApp());
     const appRef = doc(db, 'applications', applicationId);
     await updateDoc(appRef, { status });
 }

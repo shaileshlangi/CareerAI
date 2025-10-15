@@ -1,9 +1,10 @@
 
 'use server';
 
-import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs, Timestamp, query, where, documentId } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { doc, setDoc, getDoc, serverTimestamp, collection, getDocs, Timestamp, query, where, documentId, getFirestore } from 'firebase/firestore';
 import { adminDb } from '@/lib/firebase-admin';
+import { getApp } from 'firebase/app';
+
 
 export type UserRole = 'admin' | 'employer' | 'seeker';
 
@@ -48,6 +49,7 @@ export type SerializableUser = Omit<User, 'createdAt'> & {
 
 // This function still uses the client SDK because it's called from the client-side sign-up process.
 export async function createUser(uid: string, data: Omit<User, 'uid' | 'createdAt'>): Promise<void> {
+  const db = getFirestore(getApp());
   await setDoc(doc(db, 'users', uid), {
     ...data,
     uid,
@@ -66,6 +68,7 @@ const userFromDoc = (docSnap: any): User => {
 
 // This function also uses the client SDK for fetching the current user's profile on the client.
 export async function getUser(uid: string): Promise<User | null> {
+  const db = getFirestore(getApp());
   const docRef = doc(db, 'users', uid);
   const docSnap = await getDoc(docRef);
 
@@ -78,6 +81,7 @@ export async function getUser(uid: string): Promise<User | null> {
 
 // Client-side function to get multiple users by their UIDs.
 export async function getUsers(uids: string[]): Promise<User[]> {
+  const db = getFirestore(getApp());
   if (uids.length === 0) {
     return [];
   }

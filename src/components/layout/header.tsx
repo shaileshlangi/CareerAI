@@ -7,8 +7,8 @@ import { Menu, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/use-auth';
-import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { getAuth } from 'firebase/auth';
 
 const navLinks = [
   { href: '/products', label: 'Products' },
@@ -22,6 +22,7 @@ export default function Header() {
   const router = useRouter();
 
   const handleLogout = async () => {
+    const auth = getAuth();
     await auth.signOut();
     setIsOpen(false);
     router.push('/');

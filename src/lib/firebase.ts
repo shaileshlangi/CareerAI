@@ -1,4 +1,5 @@
-import { initializeApp, getApp, getApps } from 'firebase/app';
+
+import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
@@ -12,8 +13,17 @@ const firebaseConfig = {
   messagingSenderId: '627208996802',
 };
 
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
+// This function will be called from the AuthProvider
+let app: FirebaseApp;
+const initializeClientApp = () => {
+    if (!getApps().length) {
+        app = initializeApp(firebaseConfig);
+    } else {
+        app = getApp();
+    }
+    return app;
+}
 
-export { app, auth, db };
+// We are not exporting the initialized app directly anymore.
+// We will get them from the provider.
+export { initializeClientApp, firebaseConfig };
