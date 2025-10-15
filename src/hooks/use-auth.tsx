@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 import { onAuthStateChanged, User as FirebaseUser, getAuth, Auth } from 'firebase/auth';
 import { getUser, User } from '@/lib/user';
 import { initializeClientApp } from '@/lib/firebase';
@@ -38,11 +38,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setDb(dbInstance);
 
     const unsubscribe = onAuthStateChanged(authInstance, async (fbUser) => {
+      setLoading(true);
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
-          const userProfile = await getUser(dbInstance, fbUser.uid);
-          setUser(userProfile);
+          if (dbInstance) {
+            const userProfile = await getUser(dbInstance, fbUser.uid);
+            setUser(userProfile);
+          }
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
           setUser(null);
@@ -59,12 +62,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const isLoggedIn = !loading && !!firebaseUser;
 
-  const authContextValue = { user, firebaseUser, loading, isLoggedIn, auth, db };
+  const authContextValue = useMemo(() => ({ 
+      user, 
+      firebaseUser, 
+      loading, 
+      isLoggedIn, 
+      auth, 
+      db 
+  }), [user, firebaseUser, loading, isLoggedIn, auth, db]);
 
   return (
     <AuthContext.Provider value={authContextValue}>
       <FirestoreContext.Provider value={db}>
-        {!loading ? children : null}
+        {!loading && children}
       </FirestoreContext.Provider>
     </AuthContext.Provider>
   );
