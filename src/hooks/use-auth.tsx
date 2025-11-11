@@ -33,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(authInstance, async (fbUser) => {
-      setLoading(true);
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
@@ -88,4 +87,3 @@ export const useFirestore = () => {
   }
   return context;
 };
-
