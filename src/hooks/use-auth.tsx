@@ -8,36 +8,32 @@ import { initializeClientApp } from '@/lib/firebase';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { FirebaseApp } from 'firebase/app';
 
+// --- Initialize Firebase services once, outside the component ---
+const app = initializeClientApp();
+const authInstance = getAuth(app);
+const dbInstance = getFirestore(app);
+// ---
+
 interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
   isLoggedIn: boolean;
-  auth: Auth | null;
-  db: Firestore | null;
+  auth: Auth;
+  db: Firestore;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const FirestoreContext = createContext<Firestore | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [firebaseApp, setFirebaseApp] = useState<FirebaseApp | null>(null);
-  const [auth, setAuth] = useState<Auth | null>(null);
-  const [db, setDb] = useState<Firestore | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const app = initializeClientApp();
-    const authInstance = getAuth(app);
-    const dbInstance = getFirestore(app);
-    
-    setFirebaseApp(app);
-    setAuth(authInstance);
-    setDb(dbInstance);
-
     const unsubscribe = onAuthStateChanged(authInstance, async (fbUser) => {
+      setLoading(true);
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
@@ -64,13 +60,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       firebaseUser, 
       loading, 
       isLoggedIn, 
-      auth, 
-      db 
-  }), [user, firebaseUser, loading, isLoggedIn, auth, db]);
+      auth: authInstance, 
+      db: dbInstance
+  }), [user, firebaseUser, loading, isLoggedIn]);
 
   return (
     <AuthContext.Provider value={authContextValue}>
-      <FirestoreContext.Provider value={db}>
+      <FirestoreContext.Provider value={dbInstance}>
         {children}
       </FirestoreContext.Provider>
     </AuthContext.Provider>
@@ -92,3 +88,4 @@ export const useFirestore = () => {
   }
   return context;
 };
+
