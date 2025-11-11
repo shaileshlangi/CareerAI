@@ -6,7 +6,6 @@ import { onAuthStateChanged, User as FirebaseUser, getAuth, Auth } from 'firebas
 import { getUser, User } from '@/lib/user';
 import { initializeClientApp } from '@/lib/firebase';
 import { getFirestore, Firestore } from 'firebase/firestore';
-import { FirebaseApp } from 'firebase/app';
 
 // --- Initialize Firebase services once, outside the component ---
 const app = initializeClientApp();
@@ -33,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(authInstance, async (fbUser) => {
+      setLoading(true);
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
@@ -82,8 +82,8 @@ export const useAuth = () => {
 
 export const useFirestore = () => {
   const context = useContext(FirestoreContext);
-  if (context === undefined) {
-    throw new Error('useFirestore must be used within an AuthProvider');
+  if (context === undefined || context === null) {
+    throw new Error('useFirestore must be used within an AuthProvider and the context must be available.');
   }
   return context;
 };
