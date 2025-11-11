@@ -38,14 +38,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setDb(dbInstance);
 
     const unsubscribe = onAuthStateChanged(authInstance, async (fbUser) => {
-      setLoading(true);
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
-          if (dbInstance) {
-            const userProfile = await getUser(dbInstance, fbUser.uid);
-            setUser(userProfile);
-          }
+          const userProfile = await getUser(dbInstance, fbUser.uid);
+          setUser(userProfile);
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
           setUser(null);
@@ -74,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={authContextValue}>
       <FirestoreContext.Provider value={db}>
-        {!loading && children}
+        {children}
       </FirestoreContext.Provider>
     </AuthContext.Provider>
   );
