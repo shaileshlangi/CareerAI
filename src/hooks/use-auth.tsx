@@ -7,7 +7,7 @@ import { getUser, User } from '@/lib/user';
 import { initializeClientApp } from '@/lib/firebase';
 import { getFirestore, Firestore } from 'firebase/firestore';
 
-// --- Initialize Firebase services once, outside the component ---
+// --- Initialize Firebase services once, outside the component's render cycle ---
 const app = initializeClientApp();
 const authInstance = getAuth(app);
 const dbInstance = getFirestore(app);
@@ -23,7 +23,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const FirestoreContext = createContext<Firestore | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -32,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(authInstance, async (fbUser) => {
-      setLoading(true);
       if (fbUser) {
         setFirebaseUser(fbUser);
         try {
@@ -65,9 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={authContextValue}>
-      <FirestoreContext.Provider value={dbInstance}>
-        {children}
-      </FirestoreContext.Provider>
+      {children}
     </AuthContext.Provider>
   );
 }
@@ -80,10 +76,11 @@ export const useAuth = () => {
   return context;
 };
 
+// This hook now gets the stable db instance directly from the main AuthContext
 export const useFirestore = () => {
-  const context = useContext(FirestoreContext);
-  if (context === undefined || context === null) {
-    throw new Error('useFirestore must be used within an AuthProvider and the context must be available.');
+  const { db } = useAuth();
+  if (!db) {
+    throw new Error('useFirestore must be used within an AuthProvider and the Firestore instance must be available.');
   }
-  return context;
+  return db;
 };
